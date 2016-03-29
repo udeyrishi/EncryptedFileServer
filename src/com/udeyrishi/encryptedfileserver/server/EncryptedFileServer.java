@@ -2,12 +2,14 @@ package com.udeyrishi.encryptedfileserver.server;
 
 import com.udeyrishi.encryptedfileserver.common.Preconditions;
 import com.udeyrishi.encryptedfileserver.common.TEAKey;
-import com.udeyrishi.encryptedfileserver.common.ThreadFinishedCallback;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,76 +17,99 @@ import java.util.logging.Logger;
  * Created by rishi on 2016-03-28.
  */
 public class EncryptedFileServer implements MultiThreadedServer {
+    private static final int MAX_SHUTDOWN_WAIT_SEC = 60;
+
     private final Integer port;
     private final Map<String, TEAKey> keys;
     private final Logger logger;
-    private boolean isGracefulShutDownRequested = false;
+    private final ExecutorService executorService;
 
-    // Access this list safely using "synchronised" as ResponseHandlerThread callbacks might touch it
-    private final List<ResponseHandlerThread> activeResponseHandlers = new LinkedList<>();
+    private ServerSocket serverSocket;
+    private boolean isServerShutdownRequested = false;
 
-    EncryptedFileServer(Integer port, Map<String, TEAKey> keys, Logger logger) {
+    EncryptedFileServer(Integer port, Map<String, TEAKey> keys, Logger logger, ExecutorService executorService) {
         this.port = Preconditions.checkNotNull(port, "port");
         this.keys = Preconditions.checkNotNull(keys, "keys");
         this.logger = Preconditions.checkNotNull(logger, "logger");
+        this.executorService = Preconditions.checkNotNull(executorService, "executorService");
     }
 
     @Override
     public void run() {
-        ServerSocket serverSocket = getServerSocket();
+        serverSocket = createServerSocket();
         if (serverSocket == null) {
             return;
         }
 
-        while (!isGracefulShutDownRequested) {
+        while (!isServerShutdownRequested) {
             Socket socket = accept(serverSocket);
             if (socket != null) {
-                ResponseHandlerThread responseHandlerThread = new ResponseHandlerThread(socket, logger, this);
-                synchronized (activeResponseHandlers) {
-                    activeResponseHandlers.add(responseHandlerThread);
-                }
-                responseHandlerThread.start();
+                executorService.submit(new ResponseHandler(socket, logger));
             }
             // Else, failed connection. Already logged. Move on...
         }
 
+        try {
+            if (executorService.awaitTermination(MAX_SHUTDOWN_WAIT_SEC, TimeUnit.SECONDS)) {
+                logger.log(Level.FINE, "All response handlers terminated");
+            } else {
+                logger.log(Level.FINE, "Timed out while waiting for response handlers to terminate");
+            }
+
+        } catch (InterruptedException e) {
+            logger.log(Level.SEVERE, "Executor service interrupted while waiting for response handlers to terminate");
+        }
     }
 
     @Override
     public void shutDown() {
-        isGracefulShutDownRequested = true;
-        logger.log(Level.INFO, "Server shut down requested. Interrupt again to attempt force shut down.");
+        logger.log(Level.INFO, "Server shut down requested.");
+        shutDownGracefully();
     }
 
     @Override
     public void forceShutDown() {
-        isGracefulShutDownRequested = true;
-        logger.log(Level.INFO, "Force server shut down requested. Requesting all response handlers to terminate.");
+        logger.log(Level.INFO, "Force server shut down requested");
+        shutDownGracefully();
 
-        synchronized (activeResponseHandlers) {
-            for (ResponseHandlerThread thread : activeResponseHandlers) {
-                thread.interrupt();
+        logger.log(Level.FINE, "Asking all response handlers to terminate immediately");
+        executorService.shutdownNow();
+    }
+
+    private void shutDownGracefully() {
+        if (!isServerShutdownRequested) {
+            isServerShutdownRequested = true;
+            shutDownServerSocket();
+
+            logger.log(Level.FINE, "Asking all response handlers to terminate");
+            executorService.shutdown();
+        }
+    }
+
+    private void shutDownServerSocket() {
+        try {
+            if (serverSocket != null) {
+                serverSocket.close();
+                logger.log(Level.FINE, "Successfully closed server socket");
+            } else {
+                logger.log(Level.FINE, "Server socket was never initialised. Nothing to close.");
             }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to close server socket");
         }
     }
 
-    @Override
-    public void onThreadActionFinished(Thread finishedThread) {
-        synchronized (activeResponseHandlers) {
-            //noinspection SuspiciousMethodCalls
-            activeResponseHandlers.remove(finishedThread);
-        }
-    }
-
-    private ServerSocket getServerSocket() {
+    private ServerSocket createServerSocket() {
         ServerSocket serverSocket;
-        logger.log(Level.FINE, String.format("Opening server socket at port %d...", port));
+        logger.log(Level.FINE, String.format("Creating server socket at port %d...", port));
         try {
             serverSocket = new ServerSocket(port);
-            logger.log(Level.FINE, "Server socket opened at port " + port.toString());
+            logger.log(Level.FINE, "Server socket created at port " + port.toString());
         } catch (IOException e) {
             serverSocket = null;
-            logger.log(Level.SEVERE, "Failed to create server socket with message: " + e.getMessage());
+            logger.log(Level.SEVERE, String.format("Failed to create server socket on port %d with message: %s",
+                                                   port,
+                                                   e.getMessage()));
         }
         return serverSocket;
     }
@@ -95,6 +120,10 @@ public class EncryptedFileServer implements MultiThreadedServer {
         try {
             socket = serverSocket.accept();
             logger.log(Level.FINE, "New request accepted over server socket");
+        } catch (SocketException e) {
+            socket = null;
+            logger.log(Level.FINER, "SocketException caught in EncryptedFileServer.accept. Ignore this if a shutdown was " +
+                                    "requested.");
         } catch (IOException e) {
             socket = null;
             logger.log(Level.SEVERE, "Failed to accept request over server socket with message: " + e.getMessage());

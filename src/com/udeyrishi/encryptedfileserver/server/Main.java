@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,16 +23,21 @@ public class Main {
         }
 
         Logger logger = Logger.getLogger("EncryptedFileServer");
+        logger.setLevel(Level.ALL);
+
         try {
             MultiThreadedServer server = new EncryptedFileServer(arguments.getPort(),
                                                                  getUserIDsAndKeys(arguments.getPathToKeys()),
-                                                                 logger);
-            Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(server));
+                                                                 logger,
+                                                                 Executors.newCachedThreadPool());
+            Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(server, logger));
             server.run();
 
         } catch (IllegalArgumentException | IOException | BadTEAKeysFileException e) {
             logger.log(Level.SEVERE, String.format("%s: %s", e.getClass().toString(), e.getMessage()));
         }
+
+        logger.log(Level.INFO, "Shut down completed");
     }
 
     private static HashMap<String, TEAKey> getUserIDsAndKeys(String pathToKeys) throws IOException, BadTEAKeysFileException {
