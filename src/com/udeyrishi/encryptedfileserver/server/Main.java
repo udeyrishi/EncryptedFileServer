@@ -26,6 +26,7 @@ public class Main {
             EncryptedFileServer server = new EncryptedFileServer(arguments.getPort(),
                                                                  getUserIDsAndKeys(arguments.getPathToKeys()),
                                                                  logger);
+            Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(server));
             server.run();
 
         } catch (IllegalArgumentException | IOException | BadTEAKeysFileException e) {
