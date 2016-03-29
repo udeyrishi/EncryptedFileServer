@@ -18,9 +18,9 @@ public class BigIntegerParser {
     public static BigInteger parseBigInteger(String s) {
         s = s.trim();
         if (SUPPORTED_RADICES.containsKey(s.substring(0, 2))) {
-            return new BigInteger(s.substring(2), SUPPORTED_RADICES.get(s.substring(0, 2)));
+            return new BigInteger(s.substring(2).replaceAll("\\s+", ""), SUPPORTED_RADICES.get(s.substring(0, 2)));
         } else {
-            return new BigInteger(s, DEFAULT_RADIX);
+            return new BigInteger(s.replaceAll("\\s+", ""), DEFAULT_RADIX);
         }
     }
 }
