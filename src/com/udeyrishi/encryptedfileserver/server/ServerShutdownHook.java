@@ -6,10 +6,10 @@ import com.udeyrishi.encryptedfileserver.common.Preconditions;
  * Created by rishi on 2016-03-28.
  */
 public class ServerShutdownHook extends Thread {
-    private final EncryptedFileServer server;
+    private final MultiThreadedServer server;
     private int count = 0;
 
-    ServerShutdownHook(EncryptedFileServer server) {
+    ServerShutdownHook(MultiThreadedServer server) {
         this.server = Preconditions.checkNotNull(server, "server");
     }
 

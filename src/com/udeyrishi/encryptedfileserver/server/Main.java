@@ -23,7 +23,7 @@ public class Main {
 
         Logger logger = Logger.getLogger("EncryptedFileServer");
         try {
-            EncryptedFileServer server = new EncryptedFileServer(arguments.getPort(),
+            MultiThreadedServer server = new EncryptedFileServer(arguments.getPort(),
                                                                  getUserIDsAndKeys(arguments.getPathToKeys()),
                                                                  logger);
             Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(server));

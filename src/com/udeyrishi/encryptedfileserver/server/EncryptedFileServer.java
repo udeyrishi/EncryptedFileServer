@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 /**
  * Created by rishi on 2016-03-28.
  */
-public class EncryptedFileServer implements Runnable, ThreadFinishedCallback {
+public class EncryptedFileServer implements MultiThreadedServer {
     private final Integer port;
     private final Map<String, TEAKey> keys;
     private final Logger logger;
@@ -50,12 +50,14 @@ public class EncryptedFileServer implements Runnable, ThreadFinishedCallback {
 
     }
 
-    void shutDown() {
+    @Override
+    public void shutDown() {
         isGracefulShutDownRequested = true;
         logger.log(Level.INFO, "Server shut down requested. Interrupt again to attempt force shut down.");
     }
 
-    void forceShutDown() {
+    @Override
+    public void forceShutDown() {
         isGracefulShutDownRequested = true;
         logger.log(Level.INFO, "Force server shut down requested. Requesting all response handlers to terminate.");
 
@@ -67,7 +69,7 @@ public class EncryptedFileServer implements Runnable, ThreadFinishedCallback {
     }
 
     @Override
-    public void onComplete(Thread finishedThread) {
+    public void onThreadActionFinished(Thread finishedThread) {
         synchronized (activeResponseHandlers) {
             //noinspection SuspiciousMethodCalls
             activeResponseHandlers.remove(finishedThread);

@@ -3,7 +3,9 @@ package com.udeyrishi.encryptedfileserver.server;
 import com.udeyrishi.encryptedfileserver.common.Preconditions;
 import com.udeyrishi.encryptedfileserver.common.ThreadFinishedCallback;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -25,20 +27,30 @@ class ResponseHandlerThread extends Thread {
     public void run() {
 
         // talk over the socket
-        doOnCompleteCallback();
+
+        try {
+            socket.close();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to close socket after completing communications.");
+        }
+        doOnFinishedCallback();
     }
 
     @Override
     public void interrupt() {
         super.interrupt();
-
+        try {
+            socket.close();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to close socket after completing communications.");
+        }
         // Stop transmission here
-        doOnCompleteCallback();
+        doOnFinishedCallback();
     }
 
-    private void doOnCompleteCallback() {
+    private void doOnFinishedCallback() {
         if (threadFinishedCallback != null) {
-            threadFinishedCallback.onComplete(this);
+            threadFinishedCallback.onThreadActionFinished(this);
             threadFinishedCallback = null;
         }
     }
