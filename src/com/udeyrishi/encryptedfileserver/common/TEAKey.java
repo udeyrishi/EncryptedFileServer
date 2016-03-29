@@ -24,11 +24,30 @@ public class TEAKey {
     }
 
     public long getPart(int partNumber) throws IllegalArgumentException {
-        final int upperBound = (bitCount/64) - 1;
+        final int upperBound = numLongs() - 1;
         if (partNumber > upperBound || partNumber < 0) {
             throw new IllegalArgumentException(String.format("partNumber needs to be between 0 and %d", upperBound));
         }
         return key.shiftRight(64*(upperBound-partNumber)).longValue();
+    }
+
+    public long[] getAsLongArray() {
+        long[] keyItems = new long[numLongs()];
+
+        for (int i = 0; i < numLongs(); ++i) {
+            keyItems[i] = getPart(i);
+        }
+
+        return keyItems;
+    }
+
+    @Override
+    public String toString() {
+        return "0x" + key.toString(16);
+    }
+
+    private int numLongs() {
+        return bitCount/64;
     }
 
     private static boolean isKeySizeValid(BigInteger key, int bitCount) {
