@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 public class Main {
     private static final int ENCRYPTION_KEY_BIT_COUNT = 256;
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
         ServerArguments arguments;
@@ -22,15 +23,11 @@ public class Main {
             return;
         }
 
-        Logger logger = Logger.getLogger("EncryptedFileServer");
-        logger.setLevel(Level.ALL);
-
         try {
             MultiThreadedServer server = new EncryptedFileServer(arguments.getPort(),
                                                                  getUserIDsAndKeys(arguments.getPathToKeys()),
-                                                                 logger,
                                                                  Executors.newCachedThreadPool());
-            Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(server, logger));
+            Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(server));
             server.run();
 
         } catch (IllegalArgumentException | IOException | BadTEAKeysFileException e) {

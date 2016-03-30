@@ -12,12 +12,11 @@ import java.util.logging.Logger;
  */
 class ResponseHandler implements Runnable {
 
-    private final Logger logger;
+    private static final Logger logger = Logger.getLogger(ResponseHandler.class.getName());
     private final Socket socket;
 
-    ResponseHandler(Socket socket, Logger logger) {
+    ResponseHandler(Socket socket) {
         this.socket = Preconditions.checkNotNull(socket, "socket");
-        this.logger = Preconditions.checkNotNull(logger, "logger");
     }
 
     @Override

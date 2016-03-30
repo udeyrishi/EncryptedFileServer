@@ -18,19 +18,18 @@ import java.util.logging.Logger;
  */
 public class EncryptedFileServer implements MultiThreadedServer {
     private static final int MAX_SHUTDOWN_WAIT_SEC = 60;
+    private static final Logger logger = Logger.getLogger(EncryptedFileServer.class.getName());
 
     private final Integer port;
     private final Map<String, TEAKey> keys;
-    private final Logger logger;
     private final ExecutorService executorService;
 
     private ServerSocket serverSocket;
     private boolean isServerShutdownRequested = false;
 
-    EncryptedFileServer(Integer port, Map<String, TEAKey> keys, Logger logger, ExecutorService executorService) {
+    EncryptedFileServer(Integer port, Map<String, TEAKey> keys, ExecutorService executorService) {
         this.port = Preconditions.checkNotNull(port, "port");
         this.keys = Preconditions.checkNotNull(keys, "keys");
-        this.logger = Preconditions.checkNotNull(logger, "logger");
         this.executorService = Preconditions.checkNotNull(executorService, "executorService");
     }
 
@@ -44,7 +43,7 @@ public class EncryptedFileServer implements MultiThreadedServer {
         while (!isServerShutdownRequested) {
             Socket socket = accept(serverSocket);
             if (socket != null) {
-                executorService.submit(new ResponseHandler(socket, logger));
+                executorService.submit(new ResponseHandler(socket));
             }
             // Else, failed connection. Already logged. Move on...
         }
@@ -63,13 +62,13 @@ public class EncryptedFileServer implements MultiThreadedServer {
 
     @Override
     public void shutDown() {
-        logger.log(Level.INFO, "Server shut down requested.");
+        logger.log(Level.FINE, "Server shut down requested.");
         shutDownGracefully();
     }
 
     @Override
     public void forceShutDown() {
-        logger.log(Level.INFO, "Force server shut down requested");
+        logger.log(Level.FINE, "Force server shut down requested");
         shutDownGracefully();
 
         logger.log(Level.FINE, "Asking all response handlers to terminate immediately");
@@ -122,7 +121,7 @@ public class EncryptedFileServer implements MultiThreadedServer {
             logger.log(Level.FINE, "New request accepted over server socket");
         } catch (SocketException e) {
             socket = null;
-            logger.log(Level.FINER, "SocketException caught in EncryptedFileServer.accept. Ignore this if a shutdown was " +
+            logger.log(Level.FINE, "SocketException caught in EncryptedFileServer.accept. Ignore this if a shutdown was " +
                                     "requested.");
         } catch (IOException e) {
             socket = null;
