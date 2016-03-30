@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.server;
 
+import com.udeyrishi.encryptedfileserver.common.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.Preconditions;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.logging.Logger;
  */
 class ResponseHandler implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(ResponseHandler.class.getName());
+    private static final Logger logger = LoggerFactory.createConsoleLogger(ResponseHandler.class.getName());
     private final Socket socket;
 
     ResponseHandler(Socket socket) {

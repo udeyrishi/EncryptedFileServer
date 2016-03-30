@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.server;
 
+import com.udeyrishi.encryptedfileserver.common.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.TEAKey;
 
 import java.io.BufferedReader;
@@ -12,7 +13,7 @@ import java.util.logging.Logger;
 
 public class Main {
     private static final int ENCRYPTION_KEY_BIT_COUNT = 256;
-    private static final Logger logger = Logger.getLogger(Main.class.getName());
+    private static final Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
 
     public static void main(String[] args) {
         ServerArguments arguments;

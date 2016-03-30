@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.server;
 
+import com.udeyrishi.encryptedfileserver.common.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.Preconditions;
 import com.udeyrishi.encryptedfileserver.common.TEAKey;
 
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
  */
 public class EncryptedFileServer implements MultiThreadedServer {
     private static final int MAX_SHUTDOWN_WAIT_SEC = 60;
-    private static final Logger logger = Logger.getLogger(EncryptedFileServer.class.getName());
+    private static final Logger logger = LoggerFactory.createConsoleLogger(EncryptedFileServer.class.getName());
 
     private final Integer port;
     private final Map<String, TEAKey> keys;

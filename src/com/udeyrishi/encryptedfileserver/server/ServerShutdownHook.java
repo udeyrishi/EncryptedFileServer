@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.server;
 
+import com.udeyrishi.encryptedfileserver.common.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.Preconditions;
 
 import java.util.logging.Level;
@@ -9,7 +10,7 @@ import java.util.logging.Logger;
  * Created by rishi on 2016-03-28.
  */
 public class ServerShutdownHook extends Thread {
-    private static final Logger logger = Logger.getLogger(ServerShutdownHook.class.getName());
+    private static final Logger logger = LoggerFactory.createConsoleLogger(ServerShutdownHook.class.getName());
     private final MultiThreadedServer server;
     private int count = 0;
 
