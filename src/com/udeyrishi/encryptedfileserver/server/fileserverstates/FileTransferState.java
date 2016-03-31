@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * Created by rishi on 2016-03-30.
  */
-public class FileTransferState implements CommunicationProtocol.CommunicationProtocolState {
+public class FileTransferState implements CommunicationProtocolState {
     private final String root;
     private String lastFileRequested = null;
     private boolean interrupted = false;

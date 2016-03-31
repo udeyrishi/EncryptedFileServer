@@ -45,12 +45,6 @@ public class CommunicationProtocol {
         state.interrupt(this);
     }
 
-    public interface CommunicationProtocolState {
-        void messageReceived(CommunicationProtocol protocol, Message message) throws  IOException, BadMessageException;
-        Message nextTransmissionMessage(CommunicationProtocol protocol);
-        void interrupt(CommunicationProtocol protocol);
-    }
-
     public static final CommunicationProtocolState TERMINATED_STATE = new CommunicationProtocolState() {
         @Override
         public void messageReceived(CommunicationProtocol protocol, Message message) throws IllegalStateException {
@@ -67,9 +61,4 @@ public class CommunicationProtocol {
             // no-op
         }
     };
-
-    public interface MessageFilter {
-        Message incomingMessageFilter(Message message);
-        Message outgoingMessageFilter(Message message);
-    }
 }

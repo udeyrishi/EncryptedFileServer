@@ -1,13 +1,10 @@
 package com.udeyrishi.encryptedfileserver.server.fileserverstates;
 
-import com.udeyrishi.encryptedfileserver.common.communication.MessageUtils;
+import com.udeyrishi.encryptedfileserver.common.communication.*;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
-import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
-import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
-import com.udeyrishi.encryptedfileserver.common.communication.Message;
 
 import java.io.IOException;
 import java.util.Map;
@@ -15,13 +12,13 @@ import java.util.Map;
 /**
  * Created by rishi on 2016-03-30.
  */
-public class TEAAuthenticationState implements CommunicationProtocol.CommunicationProtocolState {
+public class TEAAuthenticationState implements CommunicationProtocolState {
     private final Map<String, TEAKey> authenticationKeys;
-    private final CommunicationProtocol.CommunicationProtocolState onAuthState;
+    private final CommunicationProtocolState onAuthState;
     private TEAKey matchedKey = null;
 
     public TEAAuthenticationState(Map<String, TEAKey> authenticationKeys,
-                                  CommunicationProtocol.CommunicationProtocolState onAuthState) {
+                                  CommunicationProtocolState onAuthState) {
         this.authenticationKeys = Preconditions.checkNotNull(authenticationKeys, "authenticationKeys");
         this.onAuthState = Preconditions.checkNotNull(onAuthState, "onAuthState");
     }
