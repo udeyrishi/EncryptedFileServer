@@ -46,9 +46,8 @@ public class CommunicationProtocol {
     }
 
     public interface CommunicationProtocolState {
-        void messageReceived(CommunicationProtocol protocol, Message message)
-                                            throws IllegalStateException, IOException, BadMessageException;
-        Message nextTransmissionMessage(CommunicationProtocol protocol) throws IllegalStateException;
+        void messageReceived(CommunicationProtocol protocol, Message message) throws  IOException, BadMessageException;
+        Message nextTransmissionMessage(CommunicationProtocol protocol);
         void interrupt(CommunicationProtocol protocol);
     }
 
