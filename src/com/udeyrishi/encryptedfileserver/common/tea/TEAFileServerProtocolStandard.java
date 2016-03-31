@@ -46,4 +46,6 @@ public class TEAFileServerProtocolStandard {
             return new StringMessage(TypeNames.FILE_REQUEST, fileName);
         }
     }
+
+    public static final int ENCRYPTION_KEY_BIT_COUNT = 256;
 }

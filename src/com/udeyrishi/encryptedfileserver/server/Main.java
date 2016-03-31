@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.server;
 
+import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
@@ -18,7 +19,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
-    private static final int ENCRYPTION_KEY_BIT_COUNT = 256;
     private static final Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
 
     public static void main(String[] args) {
@@ -68,7 +68,8 @@ public class Main {
                 String userID = parts[0];
                 String key = parts[1];
                 try {
-                    userIDsAndKeys.put(userID, new TEAKey(ENCRYPTION_KEY_BIT_COUNT, key));
+                    userIDsAndKeys.put(userID, new TEAKey(TEAFileServerProtocolStandard.ENCRYPTION_KEY_BIT_COUNT,
+                                                          key));
                 } catch (IllegalArgumentException e) {
                     throw new BadTEAKeysFileException(pathToKeys, e);
                 }
