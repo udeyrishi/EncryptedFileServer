@@ -35,7 +35,7 @@ public class BufferedReaderMessage implements Message {
     }
 
     private void readMessage() throws IOException, BadMessageException {
-        Message message = new MessageParser().stringToMessage(reader.readLine());
+        Message message = MessageUtils.parseMessage(reader.readLine());
         this.messageContent = message.getMessageContents();
         this.typeName = message.getTypeName();
     }

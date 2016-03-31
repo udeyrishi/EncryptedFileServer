@@ -2,7 +2,7 @@ package com.udeyrishi.encryptedfileserver.server;
 
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.communication.BufferedReaderMessage;
-import com.udeyrishi.encryptedfileserver.common.communication.MessageParser;
+import com.udeyrishi.encryptedfileserver.common.communication.MessageUtils;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
@@ -34,7 +34,6 @@ class ClientHandler implements Runnable {
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-            MessageParser parser = new MessageParser();
             while (true) {
                 try {
                     protocol.processReceivedMessage(new BufferedReaderMessage(in));
@@ -44,7 +43,7 @@ class ClientHandler implements Runnable {
                 if (shouldTerminate()) {
                     break;
                 }
-                out.println(parser.messageToString(protocol.getNextTransmissionMessage()));
+                out.println(MessageUtils.serializeMessage(protocol.getNextTransmissionMessage()));
                 if (shouldTerminate()) {
                     break;
                 }

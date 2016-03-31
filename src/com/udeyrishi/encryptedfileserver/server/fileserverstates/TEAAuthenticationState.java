@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.server.fileserverstates;
 
+import com.udeyrishi.encryptedfileserver.common.communication.MessageUtils;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolMessages;
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
@@ -32,7 +33,9 @@ public class TEAAuthenticationState implements CommunicationProtocol.Communicati
         for (Map.Entry<String, TEAKey> key : authenticationKeys.entrySet()) {
             TEAMessageFilter filter = new TEAMessageFilter(key.getValue());
             Message decryptedMessage = filter.incomingMessageFilter(message);
-            if (decryptedMessage.getMessageContents().equals(key.getKey())) {
+
+            Message expectedAuthMessage = TEAFileServerProtocolMessages.createAuthenticationRequestMessage(key.getKey());
+            if (MessageUtils.areEqual(decryptedMessage, expectedAuthMessage)) {
                 matchedKey = key.getValue();
                 break;
             }
