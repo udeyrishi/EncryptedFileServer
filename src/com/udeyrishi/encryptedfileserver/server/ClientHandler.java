@@ -37,7 +37,7 @@ class ClientHandler implements Runnable {
                 if (shouldTerminate()) {
                     break;
                 }
-                out.println(protocol.getNextTransmissionMessage().getTransmissionString());
+                out.println(protocol.getNextTransmissionMessage().toString());
                 if (shouldTerminate()) {
                     break;
                 }

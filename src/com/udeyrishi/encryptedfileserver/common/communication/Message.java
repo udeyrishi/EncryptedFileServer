@@ -11,10 +11,6 @@ public class Message {
         this.message = message;
     }
 
-    public String getTransmissionString() {
-        return this.message;
-    }
-
     @Override
     public String toString() {
         return this.message;

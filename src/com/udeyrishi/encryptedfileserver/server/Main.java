@@ -1,10 +1,10 @@
 package com.udeyrishi.encryptedfileserver.server;
 
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
-import com.udeyrishi.encryptedfileserver.common.TEAKey;
+import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
-import com.udeyrishi.encryptedfileserver.server.fileserverstates.AuthenticationState;
+import com.udeyrishi.encryptedfileserver.server.fileserverstates.TEAAuthenticationState;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -37,7 +37,7 @@ public class Main {
                 @Override
                 public CommunicationProtocol createProtocolInstance() {
                     // Sharing keys object is fine, because it's thread-safe (read-only), and only first message requires this
-                    return new CommunicationProtocol(new AuthenticationState(authenticationKeys));
+                    return new CommunicationProtocol(new TEAAuthenticationState(authenticationKeys));
                 }
             };
 
