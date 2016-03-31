@@ -45,6 +45,8 @@ class ClientHandler implements Runnable {
 
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to create input or output streams from the socket.", e);
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
         }
 
         try {

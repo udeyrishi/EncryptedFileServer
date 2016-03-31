@@ -24,12 +24,12 @@ public class CommunicationProtocol {
         this.filter = filter;
     }
 
-    public void processReceivedMessage(Message message) {
+    public void processReceivedMessage(Message message) throws IllegalStateException {
         message = filter == null ? message : filter.incomingMessageFilter(message);
         state.messageReceived(this, message);
     }
 
-    public Message getNextTransmissionMessage() {
+    public Message getNextTransmissionMessage() throws IllegalStateException {
         Message message = state.nextTransmissionMessage(this);
         message = filter == null ? message : filter.outgoingMessageFilter(message);
         return message;
@@ -44,25 +44,24 @@ public class CommunicationProtocol {
     }
 
     public interface CommunicationProtocolState {
-        void messageReceived(CommunicationProtocol protocol, Message message);
-        Message nextTransmissionMessage(CommunicationProtocol protocol);
+        void messageReceived(CommunicationProtocol protocol, Message message) throws IllegalStateException;
+        Message nextTransmissionMessage(CommunicationProtocol protocol) throws IllegalStateException;
         void interrupt(CommunicationProtocol protocol);
     }
 
     public static final CommunicationProtocolState TERMINATED_STATE = new CommunicationProtocolState() {
         @Override
-        public void messageReceived(CommunicationProtocol protocol, Message message) {
-            // no-op
+        public void messageReceived(CommunicationProtocol protocol, Message message) throws IllegalStateException {
+            throw new IllegalStateException("Can't receive messages when protocol is terminated.");
         }
 
         @Override
         public Message nextTransmissionMessage(CommunicationProtocol protocol) {
-            // Should never be called if terminated. Try to throw NullPointerException somewhere
-            return null;
+            throw new IllegalStateException("Can't transmit messages when protocol is terminated.");
         }
 
         @Override
-        public void interrupt(CommunicationProtocol protocol) {
+        public void interrupt(CommunicationProtocol protocol) throws IllegalStateException {
             // no-op
         }
     };

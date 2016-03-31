@@ -22,6 +22,8 @@ public class TEAAuthenticationState implements CommunicationProtocol.Communicati
 
     @Override
     public void messageReceived(CommunicationProtocol protocol, Message message) {
+        // reset
+        matchedKey = null;
         for (Map.Entry<String, TEAKey> key : authenticationKeys.entrySet()) {
             TEAMessageFilter filter = new TEAMessageFilter(key.getValue());
             Message decryptedMessage = filter.incomingMessageFilter(message);
