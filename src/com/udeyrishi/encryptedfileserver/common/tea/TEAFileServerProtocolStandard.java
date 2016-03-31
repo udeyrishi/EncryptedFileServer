@@ -8,6 +8,10 @@ import com.udeyrishi.encryptedfileserver.common.communication.StringMessage;
  */
 public class TEAFileServerProtocolStandard {
 
+    public static class SpecialContent {
+        public static final String NULL_CONTENT = "No-Content";
+    }
+
     public static class TypeNames {
         public static final String AUTH_REQUEST = "Auth-Request";
         public static final String AUTH_RESPONSE = "Auth-Response";

@@ -1,7 +1,8 @@
 package com.udeyrishi.encryptedfileserver.common.communication;
 
+import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
+
 import java.io.IOException;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,21 +10,19 @@ import java.util.regex.Pattern;
  * Created by rishi on 2016-03-30.
  */
 public class MessageUtils {
-    // Type can't be null, content can be null
-    private static final String REGEX_PATTERN = "type:(.+);content:(.*)";
+    private static final String REGEX_PATTERN = "type:(.+);content:(.+)";
     private static final String FORMATTER_PATTERN = "type:%s;content:%s";
-    private static final String NULL_CONTENT = "no-content";
 
     public static Message parseMessage(String message) throws BadMessageException {
         Matcher matcher = Pattern.compile(REGEX_PATTERN).matcher(message);
         if (matcher.find()) {
             String type = matcher.group(1);
             String content = matcher.group(2);
-            if (content.equals(NULL_CONTENT)) {
+            if (content.equals(TEAFileServerProtocolStandard.SpecialContent.NULL_CONTENT)) {
                 content = null;
-            } else if (content.equals("\\" + NULL_CONTENT)) {
+            } else if (content.equals("\\" + TEAFileServerProtocolStandard.SpecialContent.NULL_CONTENT)) {
                 // remove escape
-                content = NULL_CONTENT;
+                content = TEAFileServerProtocolStandard.SpecialContent.NULL_CONTENT;
             }
             return new StringMessage(type, content);
         } else {
@@ -36,10 +35,10 @@ public class MessageUtils {
         String contents = message.getMessageContents();
 
         if (contents == null) {
-            contents = NULL_CONTENT;
-        } else if (contents.equals(NULL_CONTENT)) {
+            contents = TEAFileServerProtocolStandard.SpecialContent.NULL_CONTENT;
+        } else if (contents.equals(TEAFileServerProtocolStandard.SpecialContent.NULL_CONTENT)) {
             // add escape
-            contents = "\\" + NULL_CONTENT;
+            contents = "\\" + TEAFileServerProtocolStandard.SpecialContent.NULL_CONTENT;
         }
 
         return String.format(FORMATTER_PATTERN, type, contents);

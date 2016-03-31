@@ -15,6 +15,9 @@ public class BufferedReaderMessage implements Message {
     private String messageContent = null;
     private String typeName = null;
 
+    // This flag is used to differentiate between no-content streamed messages vs. yet-uninitialised ones
+    private boolean isRealMessageContentNull = false;
+
     public BufferedReaderMessage(BufferedReader reader, boolean autoCloseReader) {
         this.reader = Preconditions.checkNotNull(reader, "reader");
         this.autoCloseStream = autoCloseReader;
@@ -35,7 +38,7 @@ public class BufferedReaderMessage implements Message {
 
     @Override
     public String getMessageContents() throws IOException, BadMessageException {
-        if (messageContent == null) {
+        if (messageContent == null && !isRealMessageContentNull) {
             readMessage();
         }
         return messageContent;
@@ -50,6 +53,10 @@ public class BufferedReaderMessage implements Message {
             }
             this.messageContent = message.getMessageContents();
             this.typeName = message.getTypeName();
+
+            if (this.messageContent == null) {
+                isRealMessageContentNull = true;
+            }
         } else {
             this.messageContent = reader.readLine();
         }
