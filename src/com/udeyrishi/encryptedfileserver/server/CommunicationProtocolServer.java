@@ -1,8 +1,7 @@
 package com.udeyrishi.encryptedfileserver.server;
 
-import com.udeyrishi.encryptedfileserver.common.LoggerFactory;
-import com.udeyrishi.encryptedfileserver.common.Preconditions;
-import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
+import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
+import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
 
 import java.io.IOException;

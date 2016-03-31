@@ -1,4 +1,4 @@
-package com.udeyrishi.encryptedfileserver.common;
+package com.udeyrishi.encryptedfileserver.common.utils;
 
 /**
  * Created by rishi on 2016-03-28.

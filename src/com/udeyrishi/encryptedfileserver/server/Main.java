@@ -1,10 +1,10 @@
 package com.udeyrishi.encryptedfileserver.server;
 
-import com.udeyrishi.encryptedfileserver.common.LoggerFactory;
+import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
-import com.udeyrishi.encryptedfileserver.server.serverstates.AuthenticationState;
+import com.udeyrishi.encryptedfileserver.server.fileserverstates.AuthenticationState;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

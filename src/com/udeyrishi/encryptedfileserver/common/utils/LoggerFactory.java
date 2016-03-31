@@ -1,4 +1,4 @@
-package com.udeyrishi.encryptedfileserver.common;
+package com.udeyrishi.encryptedfileserver.common.utils;
 
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
