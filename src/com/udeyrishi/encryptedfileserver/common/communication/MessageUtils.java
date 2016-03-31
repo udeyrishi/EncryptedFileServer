@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * Created by rishi on 2016-03-30.
  */
 public class MessageUtils {
-    private static final String REGEX_PATTERN = "type:(.+);content:(.+)";
+    private static final String REGEX_PATTERN = "\\s*type\\s*:\\s*(.+?)\\s*;\\s*content\\s*:(.+)";
     private static final String FORMATTER_PATTERN = "type:%s;content:%s";
 
     public static Message parseMessage(String message) throws BadMessageException {

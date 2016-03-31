@@ -34,6 +34,7 @@ public class FileTransferState implements CommunicationProtocolState {
     @Override
     public Message nextTransmissionMessage(CommunicationProtocol protocol) {
         if (interrupted) {
+            protocol.setState(CommunicationProtocol.TERMINATED_STATE);
             return new StringMessage(TEAFileServerProtocolStandard.TypeNames.INTERRUPT_NOTIFICATION, null);
         }
 
