@@ -1,7 +1,7 @@
 package com.udeyrishi.encryptedfileserver.server.fileserverstates;
 
 import com.udeyrishi.encryptedfileserver.common.communication.MessageUtils;
-import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolMessages;
+import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
@@ -34,7 +34,7 @@ public class TEAAuthenticationState implements CommunicationProtocol.Communicati
             TEAMessageFilter filter = new TEAMessageFilter(key.getValue());
             Message decryptedMessage = filter.incomingMessageFilter(message);
 
-            Message expectedAuthMessage = TEAFileServerProtocolMessages.createAuthenticationRequestMessage(key.getKey());
+            Message expectedAuthMessage = TEAFileServerProtocolStandard.MessageBuilder.authenticationRequest(key.getKey());
             if (MessageUtils.areEqual(decryptedMessage, expectedAuthMessage)) {
                 matchedKey = key.getValue();
                 break;
@@ -45,11 +45,11 @@ public class TEAAuthenticationState implements CommunicationProtocol.Communicati
     @Override
     public Message nextTransmissionMessage(CommunicationProtocol protocol) {
         if (matchedKey == null) {
-            return TEAFileServerProtocolMessages.ACCESS_DENIED;
+            return TEAFileServerProtocolStandard.StandardMessages.ACCESS_DENIED;
         } else {
             TEAMessageFilter encryptionFilter = new TEAMessageFilter(matchedKey);
             Message encryptedAccessGrantedMessage
-                    = encryptionFilter.outgoingMessageFilter(TEAFileServerProtocolMessages.ACCESS_GRANTED);
+                    = encryptionFilter.outgoingMessageFilter(TEAFileServerProtocolStandard.StandardMessages.ACCESS_GRANTED);
 
             // Change to file-transfer state and encrypt all messages from here onwards
             protocol.setMessageFilter(encryptionFilter);
