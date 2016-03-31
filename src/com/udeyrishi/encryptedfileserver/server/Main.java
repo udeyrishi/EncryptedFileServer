@@ -21,9 +21,10 @@ import java.util.logging.Logger;
 
 public class Main {
     private static final Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
-    public static final String PORT = "port";
-    public static final String KEYS_FILE_PATH = "keys_file_path";
-    public static final String FILE_SERVER_ROOT = "file_server_root";
+    private static final String PORT = "port";
+    private static final String KEYS_FILE_PATH = "keys";
+    private static final String FILE_SERVER_ROOT = "root";
+    private static final String DEFAULT_ROOT = ".";
 
     public static void main(String[] args) {
         final ArgumentParser arguments;
@@ -37,6 +38,8 @@ public class Main {
         try {
             final Map<String, TEAKey> authenticationKeys
                     = Collections.unmodifiableMap(getAuthenticationKeys(arguments.<String>get(KEYS_FILE_PATH)));
+            logger.log(Level.FINER, "Keys read from file: " + arguments.<String>get(KEYS_FILE_PATH));
+            logger.log(Level.FINER, "File server root: " + arguments.<String>get(FILE_SERVER_ROOT));
 
             CommunicationProtocolFactory protocolFactory = new CommunicationProtocolFactory() {
                 @Override
@@ -87,8 +90,8 @@ public class Main {
         ArgumentParser parser = new ArgumentParser(args);
         parser.addPositionalArg(PORT, 0, parser.createIntegerParser("port"));
         parser.addPositionalArg(KEYS_FILE_PATH, 1, parser.createStringParser("Path to the keys file"));
-        parser.addPositionalArg(FILE_SERVER_ROOT, 2, parser.createStringParser("Path to the file server " +
-                                                                                        "root"));
+        parser.addOptionalArg(FILE_SERVER_ROOT, parser.createStringParser("Path to the file server root"),
+                              DEFAULT_ROOT);
         parser.process();
         return parser;
     }

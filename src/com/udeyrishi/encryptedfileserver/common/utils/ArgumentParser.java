@@ -84,8 +84,13 @@ public class ArgumentParser {
         this.positionalArgumentNames.add(position, argName);
     }
 
-    public <T> void addOptionalArg(String argName, Parser<T> parser) {
+    public <T> void addOptionalArg(String argName, Parser<T> parser, T defaultValue) {
         this.optionalArgumentParsers.put(argName, parser);
+        this.parsingResults.put(argName, defaultValue);
+    }
+
+    public <T> void addOptionalArg(String argName, Parser<T> parser) {
+        this.addOptionalArg(argName, parser, null);
     }
 
     public interface Parser<T> {
