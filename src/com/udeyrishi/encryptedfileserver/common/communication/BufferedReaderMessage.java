@@ -18,6 +18,11 @@ public class BufferedReaderMessage implements Message {
         this.reader = Preconditions.checkNotNull(reader, "reader");
     }
 
+    public BufferedReaderMessage(String typeName, BufferedReader contentReader) {
+        this(contentReader);
+        this.typeName = Preconditions.checkNotNull(typeName, "typeName");
+    }
+
     @Override
     public String getTypeName() throws IOException, BadMessageException {
         if (typeName == null) {
@@ -35,8 +40,13 @@ public class BufferedReaderMessage implements Message {
     }
 
     private void readMessage() throws IOException, BadMessageException {
-        Message message = MessageUtils.parseMessage(reader.readLine());
-        this.messageContent = message.getMessageContents();
-        this.typeName = message.getTypeName();
+        if (typeName == null) {
+            // Entire message is in the reader
+            Message message = MessageUtils.parseMessage(reader.readLine());
+            this.messageContent = message.getMessageContents();
+            this.typeName = message.getTypeName();
+        } else {
+            this.messageContent = reader.readLine();
+        }
     }
 }
