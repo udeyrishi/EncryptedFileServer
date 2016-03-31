@@ -36,7 +36,7 @@ class ClientHandler implements Runnable {
 
             while (true) {
                 try {
-                    protocol.processReceivedMessage(new BufferedReaderMessage(in));
+                    protocol.processReceivedMessage(new BufferedReaderMessage(in, false));
                     logger.log(Level.FINEST, "Rx message processing completed");
                 } catch (BadMessageException e) {
                     logger.log(Level.SEVERE, "Illegal message received from client. Ignoring and moving on.", e);

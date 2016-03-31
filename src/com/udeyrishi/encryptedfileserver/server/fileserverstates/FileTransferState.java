@@ -41,12 +41,15 @@ public class FileTransferState implements CommunicationProtocolState {
             return TEAFileServerProtocolStandard.StandardMessages.BAD_FILE_REQUEST_RESPONSE;
         }
 
+        Message response;
         try {
-            return new BufferedReaderMessage(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS,
-                                     new BufferedReader(new FileReader(Paths.get(root, lastFileRequested).toFile())));
+            response = new BufferedReaderMessage(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS,
+                                     new BufferedReader(new FileReader(Paths.get(root, lastFileRequested).toFile())), true);
         } catch (FileNotFoundException e) {
-            return TEAFileServerProtocolStandard.StandardMessages.FILE_NOT_FOUND_RESPONSE;
+            response = TEAFileServerProtocolStandard.StandardMessages.FILE_NOT_FOUND_RESPONSE;
         }
+        lastFileRequested = null;
+        return response;
     }
 
     @Override

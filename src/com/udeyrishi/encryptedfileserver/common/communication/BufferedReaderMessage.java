@@ -10,16 +10,18 @@ import java.io.IOException;
  */
 public class BufferedReaderMessage implements Message {
     private final BufferedReader reader;
+    private final boolean autoCloseStream;
 
     private String messageContent = null;
     private String typeName = null;
 
-    public BufferedReaderMessage(BufferedReader reader) {
+    public BufferedReaderMessage(BufferedReader reader, boolean autoCloseReader) {
         this.reader = Preconditions.checkNotNull(reader, "reader");
+        this.autoCloseStream = autoCloseReader;
     }
 
-    public BufferedReaderMessage(String typeName, BufferedReader contentReader) {
-        this(contentReader);
+    public BufferedReaderMessage(String typeName, BufferedReader contentReader, boolean autoCloseStream) {
+        this(contentReader, autoCloseStream);
         this.typeName = Preconditions.checkNotNull(typeName, "typeName");
     }
 
@@ -43,6 +45,9 @@ public class BufferedReaderMessage implements Message {
         if (typeName == null) {
             // Entire message is in the reader
             Message message = MessageUtils.parseMessage(reader.readLine());
+            if (autoCloseStream) {
+                reader.close();
+            }
             this.messageContent = message.getMessageContents();
             this.typeName = message.getTypeName();
         } else {
