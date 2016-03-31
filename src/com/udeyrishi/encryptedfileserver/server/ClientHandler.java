@@ -1,10 +1,11 @@
 package com.udeyrishi.encryptedfileserver.server;
 
+import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.communication.BufferedReaderMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.MessageParser;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
-import com.udeyrishi.encryptedfileserver.common.communication.Message;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,18 +34,24 @@ class ClientHandler implements Runnable {
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
+            MessageParser parser = new MessageParser();
             while (true) {
-                protocol.processReceivedMessage(new BufferedReaderMessage(in));
+                try {
+                    protocol.processReceivedMessage(new BufferedReaderMessage(in));
+                } catch (BadMessageException e) {
+                    logger.log(Level.SEVERE, "Illegal message received from client. Ignoring and moving on.", e);
+                }
                 if (shouldTerminate()) {
                     break;
                 }
-                out.println(protocol.getNextTransmissionMessage().getStringMessage());
+                out.println(parser.messageToString(protocol.getNextTransmissionMessage()));
                 if (shouldTerminate()) {
                     break;
                 }
             }
 
-        } catch (IOException | IllegalStateException e) {
+        } catch (IOException | IllegalStateException | BadMessageException e) {
+            // Catching BadMessageException from Tx side is fatal, but should be resistant to garbage from Rx side
             logger.log(Level.SEVERE, e.toString(), e);
         }
 

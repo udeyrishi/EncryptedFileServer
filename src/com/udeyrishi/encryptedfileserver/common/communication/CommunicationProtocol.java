@@ -26,7 +26,7 @@ public class CommunicationProtocol {
         this.filter = filter;
     }
 
-    public void processReceivedMessage(Message message) throws IllegalStateException, IOException {
+    public void processReceivedMessage(Message message) throws IllegalStateException, IOException, BadMessageException {
         message = filter == null ? message : filter.incomingMessageFilter(message);
         state.messageReceived(this, message);
     }
@@ -46,7 +46,8 @@ public class CommunicationProtocol {
     }
 
     public interface CommunicationProtocolState {
-        void messageReceived(CommunicationProtocol protocol, Message message) throws IllegalStateException, IOException;
+        void messageReceived(CommunicationProtocol protocol, Message message)
+                                            throws IllegalStateException, IOException, BadMessageException;
         Message nextTransmissionMessage(CommunicationProtocol protocol) throws IllegalStateException;
         void interrupt(CommunicationProtocol protocol);
     }

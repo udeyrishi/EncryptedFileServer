@@ -1,17 +1,29 @@
 package com.udeyrishi.encryptedfileserver.common.communication;
 
+import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
+
+import java.io.IOException;
+
 /**
  * Created by rishi on 2016-03-30.
  */
 public class StringMessage implements Message {
 
-    private final String message;
+    private final String messageContents;
+    private final String typeName;
 
-    public StringMessage(String message) {
-        this.message = message;
+    public StringMessage(String typeName, String messageContents) {
+        this.typeName = Preconditions.checkNotNull(typeName, "typeName");
+        this.messageContents = messageContents;
     }
 
-    public String getStringMessage() {
-        return this.message;
+    @Override
+    public String getTypeName() {
+        return typeName;
+    }
+
+    @Override
+    public String getMessageContents() throws IOException {
+        return messageContents;
     }
 }

@@ -11,12 +11,32 @@ import java.io.IOException;
 public class BufferedReaderMessage implements Message {
     private final BufferedReader reader;
 
+    private String messageContent = null;
+    private String typeName = null;
+
     public BufferedReaderMessage(BufferedReader reader) {
         this.reader = Preconditions.checkNotNull(reader, "reader");
     }
 
     @Override
-    public String getStringMessage() throws IOException {
-        return reader.readLine();
+    public String getTypeName() throws IOException, BadMessageException {
+        if (typeName == null) {
+            readMessage();
+        }
+        return typeName;
+    }
+
+    @Override
+    public String getMessageContents() throws IOException, BadMessageException {
+        if (messageContent == null) {
+            readMessage();
+        }
+        return messageContent;
+    }
+
+    private void readMessage() throws IOException, BadMessageException {
+        Message message = new MessageParser().stringToMessage(reader.readLine());
+        this.messageContent = message.getMessageContents();
+        this.typeName = message.getTypeName();
     }
 }
