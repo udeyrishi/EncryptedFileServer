@@ -2,11 +2,14 @@ package com.udeyrishi.encryptedfileserver.server;
 
 import com.udeyrishi.encryptedfileserver.common.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.TEAKey;
+import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
+import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
+import com.udeyrishi.encryptedfileserver.server.serverstates.AuthenticationState;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,22 +28,32 @@ public class Main {
         }
 
         try {
-            MultiThreadedServer server = new EncryptedFileServer(arguments.getPort(),
-                                                                 getUserIDsAndKeys(arguments.getPathToKeys()),
+            final ConcurrentHashMap<String, TEAKey> authenticationKeys = getAuthenticationKeys(arguments.getPathToKeys());
+            CommunicationProtocolFactory protocolFactory = new CommunicationProtocolFactory() {
+                @Override
+                public CommunicationProtocol createProtocolInstance() {
+                    // Sharing keys object is fine, because it's thread-safe, and only first message requires this
+                    return new CommunicationProtocol(new AuthenticationState(authenticationKeys));
+                }
+            };
+
+            MultiThreadedServer server = new CommunicationProtocolServer(arguments.getPort(),
+                                                                 protocolFactory,
                                                                  Executors.newCachedThreadPool());
             Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(server));
             server.run();
 
         } catch (IllegalArgumentException | IOException | BadTEAKeysFileException e) {
-            logger.log(Level.SEVERE, String.format("%s: %s", e.getClass().toString(), e.getMessage()));
+            logger.log(Level.SEVERE, e.toString(), e);
         }
 
         logger.log(Level.INFO, "Shut down completed");
     }
 
-    private static HashMap<String, TEAKey> getUserIDsAndKeys(String pathToKeys) throws IOException, BadTEAKeysFileException {
-        HashMap<String, TEAKey> userIDsAndKeys = new HashMap<>();
+    private static ConcurrentHashMap<String, TEAKey> getAuthenticationKeys(String pathToKeys)
+                                                                    throws IOException, BadTEAKeysFileException {
 
+        ConcurrentHashMap<String, TEAKey> userIDsAndKeys = new ConcurrentHashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(pathToKeys))) {
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 String[] parts = line.split("\\s+", 2);

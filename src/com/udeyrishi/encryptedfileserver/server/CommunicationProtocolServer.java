@@ -2,13 +2,13 @@ package com.udeyrishi.encryptedfileserver.server;
 
 import com.udeyrishi.encryptedfileserver.common.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.Preconditions;
-import com.udeyrishi.encryptedfileserver.common.TEAKey;
+import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
+import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -17,20 +17,23 @@ import java.util.logging.Logger;
 /**
  * Created by rishi on 2016-03-28.
  */
-public class EncryptedFileServer implements MultiThreadedServer {
+public class CommunicationProtocolServer implements MultiThreadedServer {
     private static final int MAX_SHUTDOWN_WAIT_SEC = 60;
-    private static final Logger logger = LoggerFactory.createConsoleLogger(EncryptedFileServer.class.getName());
+    private static final Logger logger = LoggerFactory.createConsoleLogger(CommunicationProtocolServer.class.getName());
 
     private final Integer port;
-    private final Map<String, TEAKey> keys;
+    private final CommunicationProtocolFactory protocolFactory;
     private final ExecutorService executorService;
 
     private ServerSocket serverSocket;
     private boolean isServerShutdownRequested = false;
 
-    EncryptedFileServer(Integer port, Map<String, TEAKey> keys, ExecutorService executorService) {
+    CommunicationProtocolServer(Integer port,
+                                CommunicationProtocolFactory protocolFactory,
+                                ExecutorService executorService) {
+
         this.port = Preconditions.checkNotNull(port, "port");
-        this.keys = Preconditions.checkNotNull(keys, "keys");
+        this.protocolFactory = Preconditions.checkNotNull(protocolFactory, "protocolFactory");
         this.executorService = Preconditions.checkNotNull(executorService, "executorService");
     }
 
@@ -44,7 +47,7 @@ public class EncryptedFileServer implements MultiThreadedServer {
         while (!isServerShutdownRequested) {
             Socket socket = accept(serverSocket);
             if (socket != null) {
-                executorService.submit(new ResponseHandler(socket));
+                executorService.submit(new ClientHandler(socket, protocolFactory.createProtocolInstance()));
             }
             // Else, failed connection. Already logged. Move on...
         }
@@ -57,7 +60,7 @@ public class EncryptedFileServer implements MultiThreadedServer {
             }
 
         } catch (InterruptedException e) {
-            logger.log(Level.SEVERE, "Executor service interrupted while waiting for response handlers to terminate");
+            logger.log(Level.SEVERE, "Executor service interrupted while waiting for response handlers to terminate", e);
         }
     }
 
@@ -95,7 +98,7 @@ public class EncryptedFileServer implements MultiThreadedServer {
                 logger.log(Level.FINE, "Server socket was never initialised. Nothing to close.");
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to close server socket");
+            logger.log(Level.SEVERE, "Failed to close server socket", e);
         }
     }
 
@@ -109,7 +112,7 @@ public class EncryptedFileServer implements MultiThreadedServer {
             serverSocket = null;
             logger.log(Level.SEVERE, String.format("Failed to create server socket on port %d with message: %s",
                                                    port,
-                                                   e.getMessage()));
+                                                   e.getMessage()), e);
         }
         return serverSocket;
     }
@@ -122,11 +125,11 @@ public class EncryptedFileServer implements MultiThreadedServer {
             logger.log(Level.FINE, "New request accepted over server socket");
         } catch (SocketException e) {
             socket = null;
-            logger.log(Level.FINE, "SocketException caught in EncryptedFileServer.accept. Ignore this if a shutdown was " +
+            logger.log(Level.FINE, "SocketException caught in CommunicationProtocolServer.accept. Ignore this if a shutdown was " +
                                     "requested.");
         } catch (IOException e) {
             socket = null;
-            logger.log(Level.SEVERE, "Failed to accept request over server socket with message: " + e.getMessage());
+            logger.log(Level.SEVERE, "Failed to accept request over server socket with message: " + e.getMessage(), e);
         }
 
         return socket;
