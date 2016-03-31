@@ -1,4 +1,4 @@
-package com.udeyrishi.encryptedfileserver.common;
+package com.udeyrishi.encryptedfileserver.common.tea;
 
 import com.udeyrishi.encryptedfileserver.common.communication.Message;
 import com.udeyrishi.encryptedfileserver.common.communication.StringMessage;

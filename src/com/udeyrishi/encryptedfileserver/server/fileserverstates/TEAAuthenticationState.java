@@ -1,6 +1,6 @@
 package com.udeyrishi.encryptedfileserver.server.fileserverstates;
 
-import com.udeyrishi.encryptedfileserver.common.TEAFileServerProtocolMessages;
+import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolMessages;
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
