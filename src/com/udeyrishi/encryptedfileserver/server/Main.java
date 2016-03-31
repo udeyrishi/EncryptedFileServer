@@ -9,6 +9,8 @@ import com.udeyrishi.encryptedfileserver.server.serverstates.AuthenticationState
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -28,11 +30,13 @@ public class Main {
         }
 
         try {
-            final ConcurrentHashMap<String, TEAKey> authenticationKeys = getAuthenticationKeys(arguments.getPathToKeys());
+            final Map<String, TEAKey> authenticationKeys
+                    = Collections.unmodifiableMap(getAuthenticationKeys(arguments.getPathToKeys()));
+
             CommunicationProtocolFactory protocolFactory = new CommunicationProtocolFactory() {
                 @Override
                 public CommunicationProtocol createProtocolInstance() {
-                    // Sharing keys object is fine, because it's thread-safe, and only first message requires this
+                    // Sharing keys object is fine, because it's thread-safe (read-only), and only first message requires this
                     return new CommunicationProtocol(new AuthenticationState(authenticationKeys));
                 }
             };
