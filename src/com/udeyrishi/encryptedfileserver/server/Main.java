@@ -1,6 +1,7 @@
 package com.udeyrishi.encryptedfileserver.server;
 
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
+import com.udeyrishi.encryptedfileserver.common.utils.ArgumentParser;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
@@ -20,11 +21,14 @@ import java.util.logging.Logger;
 
 public class Main {
     private static final Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
+    public static final String PORT = "port";
+    public static final String KEYS_FILE_PATH = "keys_file_path";
+    public static final String FILE_SERVER_ROOT = "file_server_root";
 
     public static void main(String[] args) {
-        final ServerArguments arguments;
+        final ArgumentParser arguments;
         try {
-            arguments = new ServerArguments(args);
+            arguments = getArguments(args);
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
             return;
@@ -32,19 +36,19 @@ public class Main {
 
         try {
             final Map<String, TEAKey> authenticationKeys
-                    = Collections.unmodifiableMap(getAuthenticationKeys(arguments.getPathToKeys()));
+                    = Collections.unmodifiableMap(getAuthenticationKeys(arguments.<String>get(KEYS_FILE_PATH)));
 
             CommunicationProtocolFactory protocolFactory = new CommunicationProtocolFactory() {
                 @Override
                 public CommunicationProtocol createProtocolInstance() {
-                    FileTransferState onAuthState = new FileTransferState(arguments.getPathToFilesRootDir());
+                    FileTransferState onAuthState = new FileTransferState(arguments.<String>get(FILE_SERVER_ROOT));
 
                     // Sharing keys object is fine, because it's thread-safe (read-only), and only first message requires this
                     return new CommunicationProtocol(new TEAAuthenticationState(authenticationKeys, onAuthState));
                 }
             };
 
-            MultiThreadedServer server = new CommunicationProtocolServer(arguments.getPort(),
+            MultiThreadedServer server = new CommunicationProtocolServer(arguments.<Integer>get(PORT),
                                                                  protocolFactory,
                                                                  Executors.newCachedThreadPool());
             Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(server));
@@ -79,39 +83,13 @@ public class Main {
         return userIDsAndKeys;
     }
 
-    private static class ServerArguments {
-        private Integer port;
-        private String pathToKeys;
-        private String pathToFilesRootDir;
-
-        ServerArguments(String[] args) {
-            if (args.length < 3) {
-                throw new IllegalArgumentException(getUsage());
-            }
-
-            try {
-                this.port = Integer.parseInt(args[0]);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(getUsage());
-            }
-            this.pathToKeys = args[1];
-            this.pathToFilesRootDir = args[2];
-        }
-
-        private static String getUsage() {
-            return "Usage: java Main <port_number> <keys_file_path> <file_server_root>";
-        }
-
-        String getPathToKeys() {
-            return pathToKeys;
-        }
-
-        Integer getPort() {
-            return port;
-        }
-
-        public String getPathToFilesRootDir() {
-            return pathToFilesRootDir;
-        }
+    private static ArgumentParser getArguments(String[] args) throws IllegalArgumentException {
+        ArgumentParser parser = new ArgumentParser(args);
+        parser.addPositionalArg(PORT, 0, parser.createIntegerParser("port"));
+        parser.addPositionalArg(KEYS_FILE_PATH, 1, parser.createStringParser("Path to the keys file"));
+        parser.addPositionalArg(FILE_SERVER_ROOT, 2, parser.createStringParser("Path to the file server " +
+                                                                                        "root"));
+        parser.process();
+        return parser;
     }
 }
