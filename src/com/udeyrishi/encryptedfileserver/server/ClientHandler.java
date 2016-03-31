@@ -37,6 +37,7 @@ class ClientHandler implements Runnable {
             while (true) {
                 try {
                     protocol.processReceivedMessage(new BufferedReaderMessage(in));
+                    logger.log(Level.FINEST, "Rx message processing completed");
                 } catch (BadMessageException e) {
                     logger.log(Level.SEVERE, "Illegal message received from client. Ignoring and moving on.", e);
                 }
@@ -44,11 +45,11 @@ class ClientHandler implements Runnable {
                     break;
                 }
                 out.println(MessageUtils.serializeMessage(protocol.getNextTransmissionMessage()));
+                logger.log(Level.FINEST, "Tx message sent");
                 if (shouldTerminate()) {
                     break;
                 }
             }
-
         } catch (IOException | IllegalStateException | BadMessageException e) {
             // Catching BadMessageException from Tx side is fatal, but should be resistant to garbage from Rx side
             logger.log(Level.SEVERE, e.toString(), e);
@@ -59,6 +60,8 @@ class ClientHandler implements Runnable {
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to close socket after completing communications.", e);
         }
+
+        logger.log(Level.FINER, "Shutting down client handler");
     }
 
     private boolean shouldTerminate() {
