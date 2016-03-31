@@ -14,10 +14,13 @@ import java.util.Map;
  */
 public class TEAAuthenticationState implements CommunicationProtocol.CommunicationProtocolState {
     private final Map<String, TEAKey> authenticationKeys;
+    private final CommunicationProtocol.CommunicationProtocolState onAuthState;
     private TEAKey matchedKey = null;
 
-    public TEAAuthenticationState(Map<String, TEAKey> authenticationKeys) {
+    public TEAAuthenticationState(Map<String, TEAKey> authenticationKeys,
+                                  CommunicationProtocol.CommunicationProtocolState onAuthState) {
         this.authenticationKeys = Preconditions.checkNotNull(authenticationKeys, "authenticationKeys");
+        this.onAuthState = Preconditions.checkNotNull(onAuthState, "onAuthState");
     }
 
     @Override
@@ -43,8 +46,9 @@ public class TEAAuthenticationState implements CommunicationProtocol.Communicati
             Message encryptedAccessGrantedMessage
                     = encryptionFilter.outgoingMessageFilter(TEAFileServerProtocolMessages.ACCESS_GRANTED);
 
-            // Change to file-transfer state
-            protocol.setState(null);
+            // Change to file-transfer state and encrypt all messages from here onwards
+            protocol.setMessageFilter(encryptionFilter);
+            protocol.setState(onAuthState);
             return encryptedAccessGrantedMessage;
         }
     }

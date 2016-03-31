@@ -4,6 +4,7 @@ import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
+import com.udeyrishi.encryptedfileserver.server.fileserverstates.FileTransferState;
 import com.udeyrishi.encryptedfileserver.server.fileserverstates.TEAAuthenticationState;
 
 import java.io.BufferedReader;
@@ -21,7 +22,7 @@ public class Main {
     private static final Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
 
     public static void main(String[] args) {
-        ServerArguments arguments;
+        final ServerArguments arguments;
         try {
             arguments = new ServerArguments(args);
         } catch (IllegalArgumentException e) {
@@ -36,8 +37,10 @@ public class Main {
             CommunicationProtocolFactory protocolFactory = new CommunicationProtocolFactory() {
                 @Override
                 public CommunicationProtocol createProtocolInstance() {
+                    FileTransferState onAuthState = new FileTransferState(arguments.getPathToFilesRootDir());
+
                     // Sharing keys object is fine, because it's thread-safe (read-only), and only first message requires this
-                    return new CommunicationProtocol(new TEAAuthenticationState(authenticationKeys));
+                    return new CommunicationProtocol(new TEAAuthenticationState(authenticationKeys, onAuthState));
                 }
             };
 
@@ -78,9 +81,10 @@ public class Main {
     private static class ServerArguments {
         private Integer port;
         private String pathToKeys;
+        private String pathToFilesRootDir;
 
         ServerArguments(String[] args) {
-            if (args.length < 2) {
+            if (args.length < 3) {
                 throw new IllegalArgumentException(getUsage());
             }
 
@@ -90,10 +94,11 @@ public class Main {
                 throw new IllegalArgumentException(getUsage());
             }
             this.pathToKeys = args[1];
+            this.pathToFilesRootDir = args[2];
         }
 
         private static String getUsage() {
-            return "Usage: java Main <port_number> <keys_file_path>";
+            return "Usage: java Main <port_number> <keys_file_path> <file_server_root>";
         }
 
         String getPathToKeys() {
@@ -102,6 +107,10 @@ public class Main {
 
         Integer getPort() {
             return port;
+        }
+
+        public String getPathToFilesRootDir() {
+            return pathToFilesRootDir;
         }
     }
 }
