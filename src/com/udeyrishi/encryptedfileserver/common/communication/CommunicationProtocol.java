@@ -1,5 +1,7 @@
 package com.udeyrishi.encryptedfileserver.common.communication;
 
+import java.io.IOException;
+
 /**
  * Created by rishi on 2016-03-30.
  */
@@ -24,7 +26,7 @@ public class CommunicationProtocol {
         this.filter = filter;
     }
 
-    public void processReceivedMessage(Message message) throws IllegalStateException {
+    public void processReceivedMessage(Message message) throws IllegalStateException, IOException {
         message = filter == null ? message : filter.incomingMessageFilter(message);
         state.messageReceived(this, message);
     }
@@ -44,7 +46,7 @@ public class CommunicationProtocol {
     }
 
     public interface CommunicationProtocolState {
-        void messageReceived(CommunicationProtocol protocol, Message message) throws IllegalStateException;
+        void messageReceived(CommunicationProtocol protocol, Message message) throws IllegalStateException, IOException;
         Message nextTransmissionMessage(CommunicationProtocol protocol) throws IllegalStateException;
         void interrupt(CommunicationProtocol protocol);
     }

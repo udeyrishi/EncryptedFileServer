@@ -7,6 +7,7 @@ import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.Message;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -24,13 +25,13 @@ public class TEAAuthenticationState implements CommunicationProtocol.Communicati
     }
 
     @Override
-    public void messageReceived(CommunicationProtocol protocol, Message message) {
+    public void messageReceived(CommunicationProtocol protocol, Message message) throws IOException {
         // reset
         matchedKey = null;
         for (Map.Entry<String, TEAKey> key : authenticationKeys.entrySet()) {
             TEAMessageFilter filter = new TEAMessageFilter(key.getValue());
             Message decryptedMessage = filter.incomingMessageFilter(message);
-            if (decryptedMessage.toString().equals(key.getKey())) {
+            if (decryptedMessage.getStringMessage().equals(key.getKey())) {
                 matchedKey = key.getValue();
                 break;
             }

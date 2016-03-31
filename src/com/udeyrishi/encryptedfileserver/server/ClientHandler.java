@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.server;
 
+import com.udeyrishi.encryptedfileserver.common.communication.BufferedReaderMessage;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
@@ -33,19 +34,17 @@ class ClientHandler implements Runnable {
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             while (true) {
-                protocol.processReceivedMessage(new Message(in.readLine()));
+                protocol.processReceivedMessage(new BufferedReaderMessage(in));
                 if (shouldTerminate()) {
                     break;
                 }
-                out.println(protocol.getNextTransmissionMessage().toString());
+                out.println(protocol.getNextTransmissionMessage().getStringMessage());
                 if (shouldTerminate()) {
                     break;
                 }
             }
 
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to create input or output streams from the socket.", e);
-        } catch (IllegalStateException e) {
+        } catch (IOException | IllegalStateException e) {
             logger.log(Level.SEVERE, e.toString(), e);
         }
 

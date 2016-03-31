@@ -1,18 +1,10 @@
 package com.udeyrishi.encryptedfileserver.common.communication;
 
+import java.io.IOException;
+
 /**
  * Created by rishi on 2016-03-30.
  */
-public class Message {
-
-    private final String message;
-
-    public Message(String message) {
-        this.message = message;
-    }
-
-    @Override
-    public String toString() {
-        return this.message;
-    }
+public interface Message {
+    String getStringMessage() throws IOException;
 }
