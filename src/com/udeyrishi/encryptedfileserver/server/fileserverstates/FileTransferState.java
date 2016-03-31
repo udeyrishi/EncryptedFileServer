@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 /**
  * Created by rishi on 2016-03-30.
@@ -42,7 +43,7 @@ public class FileTransferState implements CommunicationProtocolState {
 
         try {
             return new BufferedReaderMessage(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS,
-                                             new BufferedReader(new FileReader(lastFileRequested)));
+                                     new BufferedReader(new FileReader(Paths.get(root, lastFileRequested).toFile())));
         } catch (FileNotFoundException e) {
             return TEAFileServerProtocolStandard.StandardMessages.FILE_NOT_FOUND_RESPONSE;
         }

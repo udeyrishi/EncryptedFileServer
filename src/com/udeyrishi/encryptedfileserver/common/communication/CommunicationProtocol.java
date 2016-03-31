@@ -31,7 +31,8 @@ public class CommunicationProtocol {
 
     public void setMessageFilter(MessageFilter filter) {
         this.filter = filter;
-        logger.log(Level.FINER, String.format("Filter %s attached to communication protocol", filter.getClass().getName()));
+        logger.log(Level.FINER, String.format("Filter %s attached to communication protocol",
+                filter == null ? "null" : filter.getClass().getName()));
     }
 
     public void processReceivedMessage(Message message) throws IllegalStateException, IOException, BadMessageException {
