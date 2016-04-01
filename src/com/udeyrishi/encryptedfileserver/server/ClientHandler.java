@@ -34,7 +34,7 @@ class ClientHandler implements Runnable {
 
             while (true) {
                 try {
-                    Message received = MessageBuilder.requestMessage().addTypeAndContent(in).autoCloseStream(false).build();
+                    Message received = MessageBuilder.requestMessage().addTypeAndContent(in).autoCloseReader(false).build();
                     protocol.processReceivedMessage(received);
                     logger.log(Level.FINEST, "Rx message processing completed");
                 } catch (BadMessageException e) {

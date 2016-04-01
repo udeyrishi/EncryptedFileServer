@@ -13,7 +13,7 @@ public class MessageBuilder {
     private String content = null;
     private BufferedReader contentReader = null;
     private BufferedReader entireMessageReader = null;
-    private boolean autoCloseStream = false;
+    private boolean autoCloseReader = false;
     private InputStream attachmentStream = null;
 
     private MessageBuilder() {
@@ -52,8 +52,8 @@ public class MessageBuilder {
         return this;
     }
 
-    public MessageBuilder autoCloseStream(boolean autoCloseStream) {
-        this.autoCloseStream = autoCloseStream;
+    public MessageBuilder autoCloseReader(boolean autoCloseReader) {
+        this.autoCloseReader = autoCloseReader;
         return this;
     }
 
@@ -72,9 +72,9 @@ public class MessageBuilder {
         Message message;
 
         if (entireMessageReader != null) {
-            message = new BufferedReaderMessage(entireMessageReader, autoCloseStream);
+            message = new BufferedReaderMessage(entireMessageReader, autoCloseReader);
         } else if (contentReader != null) {
-            message = new BufferedReaderMessage(type, contentReader, autoCloseStream);
+            message = new BufferedReaderMessage(type, contentReader, autoCloseReader);
         } else {
             message = new Message(type, content);
         }

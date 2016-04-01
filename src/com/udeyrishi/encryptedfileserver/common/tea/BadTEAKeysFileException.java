@@ -1,11 +1,15 @@
-package com.udeyrishi.encryptedfileserver.server;
+package com.udeyrishi.encryptedfileserver.common.tea;
 
 /**
  * Created by rishi on 2016-03-28.
  */
 public class BadTEAKeysFileException extends Exception {
-    BadTEAKeysFileException(String fileName, Throwable cause) {
+    public BadTEAKeysFileException(String fileName, Throwable cause) {
         super(fileName + " file is not in proper keys file format.", cause);
+    }
+
+    public BadTEAKeysFileException(String fileName) {
+        super(fileName + " file is not in proper keys file format.");
     }
 
     @Override

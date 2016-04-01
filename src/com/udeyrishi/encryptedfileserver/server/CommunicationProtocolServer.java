@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 /**
  * Created by rishi on 2016-03-28.
  */
-public class CommunicationProtocolServer implements MultiThreadedServer {
+class CommunicationProtocolServer implements MultiThreadedServer {
     private static final int MAX_SHUTDOWN_WAIT_SEC = 60;
     private static final Logger logger = LoggerFactory.createConsoleLogger(CommunicationProtocolServer.class.getName());
 
