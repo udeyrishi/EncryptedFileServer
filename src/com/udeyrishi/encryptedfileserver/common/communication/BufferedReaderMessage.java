@@ -17,23 +17,17 @@ class BufferedReaderMessage extends Message {
 
     private final BufferedReader reader;
     private final boolean autoCloseStream;
-    private final boolean readUntilNewLine;
-
-    private String messageContent = null;
-    private String typeName = null;
 
     // This flag is used to differentiate between no-content streamed messages vs. yet-uninitialised ones
     private boolean isRealMessageContentNull = false;
 
-    BufferedReaderMessage(BufferedReader reader, boolean autoCloseReader, boolean readUntilNewLine) {
+    BufferedReaderMessage(BufferedReader reader, boolean autoCloseReader) {
         this.reader = Preconditions.checkNotNull(reader, "reader");
         this.autoCloseStream = autoCloseReader;
-        this.readUntilNewLine = readUntilNewLine;
     }
 
-    BufferedReaderMessage(String typeName, BufferedReader contentReader, boolean autoCloseStream,
-                                 boolean readUntilNewLine) {
-        this(contentReader, autoCloseStream, readUntilNewLine);
+    BufferedReaderMessage(String typeName, BufferedReader contentReader, boolean autoCloseStream) {
+        this(contentReader, autoCloseStream);
         this.typeName = Preconditions.checkNotNull(typeName, "typeName");
     }
 
@@ -70,23 +64,11 @@ class BufferedReaderMessage extends Message {
     }
 
     private String readFromReader() throws IOException {
-        if (readUntilNewLine) {
-            String messageRead = reader.readLine();
-            if (messageRead == null) {
-                throw new SocketException("Null message received. Socket is suddenly terminated from client side.");
-            }
-            return messageRead;
+        String messageRead = reader.readLine();
+        if (messageRead == null) {
+            throw new SocketException("Null message received. Socket is suddenly terminated from client side.");
         }
-        else {
-            StringBuilder contents = new StringBuilder();
-
-            String line;
-            while((line = reader.readLine()) != null) {
-                contents.append(line);
-            }
-
-            return contents.toString();
-        }
+        return messageRead;
     }
 
     private void parseMessage(String message) throws BadMessageException {

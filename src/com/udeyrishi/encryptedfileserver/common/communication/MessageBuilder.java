@@ -13,7 +13,17 @@ public class MessageBuilder {
     private BufferedReader contentReader = null;
     private BufferedReader entireMessageReader = null;
     private boolean autoCloseStream = false;
-    private boolean readUntilNewLine = true;
+    private byte[] attachment = null;
+
+    private MessageBuilder() {    }
+
+    public static MessageBuilder requestMessage() {
+        return new MessageBuilder();
+    }
+
+    public static MessageBuilder responseMessage() {
+        return new MessageBuilder();
+    }
 
     public MessageBuilder addType(String type) {
         this.type = Preconditions.checkNotNull(type, "type");
@@ -45,16 +55,9 @@ public class MessageBuilder {
         return this;
     }
 
-    public static MessageBuilder requestMessage() {
-        MessageBuilder builder = new MessageBuilder();
-        builder.readUntilNewLine = true;
-        return builder;
-    }
-
-    public static MessageBuilder responseMessage() {
-        MessageBuilder builder = new MessageBuilder();
-        builder.readUntilNewLine = false;
-        return builder;
+    public MessageBuilder addAttachment(byte[] attachment) {
+        this.attachment = attachment;
+        return this;
     }
 
     private void nullifyContent() {
@@ -63,18 +66,19 @@ public class MessageBuilder {
         content = null;
     }
 
-    private MessageBuilder() {    }
-
-
     public Message build() {
+        Message message;
+
         if (entireMessageReader != null) {
-            return new BufferedReaderMessage(entireMessageReader, autoCloseStream, readUntilNewLine);
+            message = new BufferedReaderMessage(entireMessageReader, autoCloseStream);
+        }
+        else if (contentReader != null) {
+            message = new BufferedReaderMessage(type, contentReader, autoCloseStream);
+        } else {
+            message = new Message(type, content);
         }
 
-        if (contentReader != null) {
-            return new BufferedReaderMessage(type, contentReader, autoCloseStream, readUntilNewLine);
-        }
-
-        return new StringMessage(type, content);
+        message.addAttachment(attachment);
+        return message;
     }
 }

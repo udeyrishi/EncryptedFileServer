@@ -4,10 +4,7 @@ import com.udeyrishi.encryptedfileserver.common.communication.*;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,7 +25,8 @@ class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        try (OutputStream attachmentStream = socket.getOutputStream();
+             PrintWriter messageStream = new PrintWriter(attachmentStream, true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             while (true) {
@@ -42,7 +40,14 @@ class ClientHandler implements Runnable {
                 if (shouldTerminate()) {
                     break;
                 }
-                out.println(protocol.getNextTransmissionMessage().serializeMessage());
+                Message response = protocol.getNextTransmissionMessage();
+                messageStream.println(response.serializeMessage());
+                byte[] attachment = response.getAttachment();
+                if (attachment != null) {
+                    messageStream.println("\n");
+                    attachmentStream.write(attachment);
+                    attachmentStream.flush();
+                }
                 logger.log(Level.FINEST, "Tx message sent");
                 if (shouldTerminate()) {
                     break;
