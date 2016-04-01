@@ -88,8 +88,8 @@ public class Main {
 
     private static ArgumentParser getArguments(String[] args) throws IllegalArgumentException {
         ArgumentParser parser = new ArgumentParser(args);
-        parser.addPositionalArg(PORT, 0, parser.createIntegerParser("port"));
-        parser.addPositionalArg(KEYS_FILE_PATH, 1, parser.createStringParser("Path to the keys file"));
+        parser.addPositionalArg(PORT, parser.createIntegerParser("The server's port"));
+        parser.addPositionalArg(KEYS_FILE_PATH, parser.createStringParser("Path to the keys file"));
         parser.addOptionalArg(FILE_SERVER_ROOT, parser.createStringParser("Path to the file server root"),
                 DEFAULT_ROOT);
         parser.process();
