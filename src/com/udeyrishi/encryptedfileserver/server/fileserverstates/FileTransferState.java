@@ -26,7 +26,7 @@ public class FileTransferState implements CommunicationProtocolState {
     public void messageReceived(CommunicationProtocol protocol, Message message) throws IOException, BadMessageException {
         if (message.getTypeName().equals(TEAFileServerProtocolStandard.TypeNames.FILE_REQUEST)) {
             lastFileRequested = message.getMessageContents();
-        } else if (MessageUtils.areEqual(message, TEAFileServerProtocolStandard.StandardMessages.TERMINATION_REQUEST)) {
+        } else if (TEAFileServerProtocolStandard.StandardMessages.TERMINATION_REQUEST.isEqualTo(message)) {
             protocol.setState(CommunicationProtocol.TERMINATED_STATE);
         }
     }

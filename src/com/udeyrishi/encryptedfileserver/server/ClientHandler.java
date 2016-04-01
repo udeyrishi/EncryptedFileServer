@@ -42,7 +42,7 @@ class ClientHandler implements Runnable {
                 if (shouldTerminate()) {
                     break;
                 }
-                out.println(MessageUtils.serializeMessage(protocol.getNextTransmissionMessage()));
+                out.println(protocol.getNextTransmissionMessage().serializeMessage());
                 logger.log(Level.FINEST, "Tx message sent");
                 if (shouldTerminate()) {
                     break;

@@ -7,7 +7,7 @@ import java.io.IOException;
 /**
  * Created by rishi on 2016-03-30.
  */
-class StringMessage implements Message {
+class StringMessage extends Message {
 
     private final String messageContents;
     private final String typeName;

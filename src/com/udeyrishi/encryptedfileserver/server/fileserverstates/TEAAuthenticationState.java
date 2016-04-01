@@ -32,7 +32,7 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
             Message decryptedMessage = filter.incomingMessageFilter(message);
 
             Message expectedAuthMessage = TEAFileServerProtocolStandard.StandardMessages.authenticationRequest(key.getKey());
-            if (MessageUtils.areEqual(decryptedMessage, expectedAuthMessage)) {
+            if (decryptedMessage.isEqualTo(expectedAuthMessage)) {
                 matchedKey = key.getValue();
                 break;
             }

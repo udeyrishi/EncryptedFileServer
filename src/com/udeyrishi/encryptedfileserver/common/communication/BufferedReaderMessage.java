@@ -1,15 +1,20 @@
 package com.udeyrishi.encryptedfileserver.common.communication;
 
+import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.SocketException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by rishi on 2016-03-30.
  */
-class BufferedReaderMessage implements Message {
+class BufferedReaderMessage extends Message {
+    private static final String REGEX_PATTERN = "\\s*type\\s*:\\s*(.+?)\\s*;\\s*content\\s*:(.+)";
+
     private final BufferedReader reader;
     private final boolean autoCloseStream;
     private final boolean readUntilNewLine;
@@ -51,13 +56,11 @@ class BufferedReaderMessage implements Message {
     private void readMessage() throws IOException, BadMessageException {
         if (typeName == null) {
             // Entire message is in the reader
-            Message message = MessageUtils.parseMessage(readFromReader());
+            parseMessage(readFromReader());
+
             if (autoCloseStream) {
                 reader.close();
             }
-            this.messageContent = message.getMessageContents();
-            this.typeName = message.getTypeName();
-
             if (this.messageContent == null) {
                 isRealMessageContentNull = true;
             }
@@ -84,6 +87,21 @@ class BufferedReaderMessage implements Message {
 
             return contents.toString();
         }
+    }
 
+    private void parseMessage(String message) throws BadMessageException {
+        Matcher matcher = Pattern.compile(REGEX_PATTERN).matcher(message);
+        if (matcher.find()) {
+            typeName = matcher.group(1);
+            messageContent = matcher.group(2);
+            if (messageContent.equals(TEAFileServerProtocolStandard.SpecialContent.NULL_CONTENT)) {
+                messageContent = null;
+            } else if (messageContent.equals("\\" + TEAFileServerProtocolStandard.SpecialContent.NULL_CONTENT)) {
+                // remove escape
+                messageContent = TEAFileServerProtocolStandard.SpecialContent.NULL_CONTENT;
+            }
+        } else {
+            throw new BadMessageException(message);
+        }
     }
 }
