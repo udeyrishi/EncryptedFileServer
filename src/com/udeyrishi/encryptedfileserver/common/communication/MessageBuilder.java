@@ -10,36 +10,33 @@ import java.io.BufferedReader;
 public class MessageBuilder {
     private String type = null;
     private String content = null;
-    private BufferedReader contentStream = null;
-    private BufferedReader entireMessageStream = null;
+    private BufferedReader contentReader = null;
+    private BufferedReader entireMessageReader = null;
     private boolean autoCloseStream = false;
     private boolean readUntilNewLine = true;
 
     public MessageBuilder addType(String type) {
         this.type = Preconditions.checkNotNull(type, "type");
-        entireMessageStream = null;
+        entireMessageReader = null;
         return this;
     }
 
     public MessageBuilder addContent(String content) {
+        nullifyContent();
         this.content = content;
-        entireMessageStream = null;
-        contentStream = null;
         return this;
     }
 
-    public MessageBuilder addContent(BufferedReader contentStream) {
-        this.contentStream = Preconditions.checkNotNull(contentStream, "contentStream");
-        entireMessageStream = null;
-        content = null;
+    public MessageBuilder addContent(BufferedReader contentReader) {
+        nullifyContent();
+        this.contentReader = Preconditions.checkNotNull(contentReader, "contentReader");
         return this;
     }
 
-    public MessageBuilder makeFromReader(BufferedReader entireMessageStream) {
-        this.entireMessageStream = Preconditions.checkNotNull(entireMessageStream, "entireMessageStream");
+    public MessageBuilder addTypeAndContent(BufferedReader entireMessageReader) {
+        nullifyContent();
         type = null;
-        contentStream = null;
-        content = null;
+        this.entireMessageReader = Preconditions.checkNotNull(entireMessageReader, "entireMessageReader");
         return this;
     }
 
@@ -60,16 +57,22 @@ public class MessageBuilder {
         return builder;
     }
 
+    private void nullifyContent() {
+        entireMessageReader = null;
+        contentReader = null;
+        content = null;
+    }
+
     private MessageBuilder() {    }
 
 
     public Message build() {
-        if (entireMessageStream != null) {
-            return new BufferedReaderMessage(entireMessageStream, autoCloseStream, readUntilNewLine);
+        if (entireMessageReader != null) {
+            return new BufferedReaderMessage(entireMessageReader, autoCloseStream, readUntilNewLine);
         }
 
-        if (contentStream != null) {
-            return new BufferedReaderMessage(type, contentStream, autoCloseStream, readUntilNewLine);
+        if (contentReader != null) {
+            return new BufferedReaderMessage(type, contentReader, autoCloseStream, readUntilNewLine);
         }
 
         return new StringMessage(type, content);
