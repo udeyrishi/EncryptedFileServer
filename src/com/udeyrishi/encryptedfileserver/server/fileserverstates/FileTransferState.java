@@ -35,7 +35,8 @@ public class FileTransferState implements CommunicationProtocolState {
     public Message nextTransmissionMessage(CommunicationProtocol protocol) {
         if (interrupted) {
             protocol.setState(CommunicationProtocol.TERMINATED_STATE);
-            return new StringMessage(TEAFileServerProtocolStandard.TypeNames.INTERRUPT_NOTIFICATION, null);
+            return MessageBuilder.responseMessage().addType(TEAFileServerProtocolStandard.TypeNames.INTERRUPT_NOTIFICATION)
+                                                    .build();
         }
 
         if (lastFileRequested == null) {
@@ -44,8 +45,12 @@ public class FileTransferState implements CommunicationProtocolState {
 
         Message response;
         try {
-            response = new BufferedReaderMessage(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS,
-                                     new BufferedReader(new FileReader(Paths.get(root, lastFileRequested).toFile())), true);
+            response = MessageBuilder.responseMessage()
+                    .addType(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)
+                    .addContent(new BufferedReader(new FileReader(Paths.get(root, lastFileRequested).toFile())))
+                    .autoCloseStream(true)
+                    .build();
+
         } catch (FileNotFoundException e) {
             response = TEAFileServerProtocolStandard.StandardMessages.FILE_NOT_FOUND_RESPONSE;
         }

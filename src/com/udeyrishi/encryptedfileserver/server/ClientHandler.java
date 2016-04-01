@@ -1,18 +1,14 @@
 package com.udeyrishi.encryptedfileserver.server;
 
-import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
-import com.udeyrishi.encryptedfileserver.common.communication.BufferedReaderMessage;
-import com.udeyrishi.encryptedfileserver.common.communication.MessageUtils;
+import com.udeyrishi.encryptedfileserver.common.communication.*;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
-import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +33,8 @@ class ClientHandler implements Runnable {
 
             while (true) {
                 try {
-                    protocol.processReceivedMessage(new BufferedReaderMessage(in, false));
+                    Message received = MessageBuilder.requestMessage().makeFromReader(in).autoCloseStream(false).build();
+                    protocol.processReceivedMessage(received);
                     logger.log(Level.FINEST, "Rx message processing completed");
                 } catch (BadMessageException e) {
                     logger.log(Level.SEVERE, "Illegal message received from client. Ignoring and moving on.", e);
@@ -54,6 +51,8 @@ class ClientHandler implements Runnable {
         } catch (IOException | IllegalStateException | BadMessageException e) {
             // Catching BadMessageException from Tx side is fatal, but should be resistant to garbage from Rx side
             logger.log(Level.SEVERE, e.toString(), e);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled exception in ClientHandler", e);
         }
 
         try {

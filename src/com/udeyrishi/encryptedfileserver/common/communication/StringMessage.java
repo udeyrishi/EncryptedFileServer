@@ -7,12 +7,12 @@ import java.io.IOException;
 /**
  * Created by rishi on 2016-03-30.
  */
-public class StringMessage implements Message {
+class StringMessage implements Message {
 
     private final String messageContents;
     private final String typeName;
 
-    public StringMessage(String typeName, String messageContents) {
+    StringMessage(String typeName, String messageContents) {
         this.typeName = Preconditions.checkNotNull(typeName, "typeName");
         this.messageContents = messageContents;
     }

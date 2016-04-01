@@ -1,7 +1,7 @@
 package com.udeyrishi.encryptedfileserver.common.tea;
 
 import com.udeyrishi.encryptedfileserver.common.communication.Message;
-import com.udeyrishi.encryptedfileserver.common.communication.StringMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.MessageBuilder;
 
 /**
  * Created by rishi on 2016-03-30.
@@ -26,24 +26,29 @@ public class TEAFileServerProtocolStandard {
     }
 
     public static class StandardMessages {
-        public static final Message ACCESS_DENIED = new StringMessage(TypeNames.AUTH_RESPONSE, "Access-Denied");
-        public static final Message ACCESS_GRANTED = new StringMessage(TypeNames.AUTH_RESPONSE, "Access-Granted");
+        public static final Message ACCESS_DENIED = MessageBuilder.responseMessage().addType(TypeNames.AUTH_RESPONSE)
+                                                                        .addContent("Access-Denied").build();
 
-        public static final Message BAD_FILE_REQUEST_RESPONSE = new StringMessage(TypeNames.FILE_RESPONSE_FAILURE,
-                                                                                  "Bad-Request");
-        public static final Message FILE_NOT_FOUND_RESPONSE = new StringMessage(TypeNames.FILE_RESPONSE_FAILURE,
-                                                                                "File-Not-Found");
+        public static final Message ACCESS_GRANTED = MessageBuilder.responseMessage().addType(TypeNames.AUTH_RESPONSE)
+                                                                         .addContent("Access-Granted").build();
 
-        public static final Message TERMINATION_REQUEST = new StringMessage(TypeNames.TERMINATION_REQUEST, null);
-    }
+        public static final Message BAD_FILE_REQUEST_RESPONSE =  MessageBuilder.responseMessage()
+                                                                    .addType(TypeNames.FILE_RESPONSE_FAILURE)
+                                                                    .addContent("Bad-Request").build();
 
-    public static class MessageBuilder {
+        public static final Message FILE_NOT_FOUND_RESPONSE =  MessageBuilder.responseMessage()
+                                                                        .addType(TypeNames.FILE_RESPONSE_FAILURE)
+                                                                        .addContent("File-Not-Found").build();
+
+        public static final Message TERMINATION_REQUEST =  MessageBuilder.requestMessage()
+                                                            .addType(TypeNames.TERMINATION_REQUEST).build();
+
         public static Message authenticationRequest(String userID) {
-            return new StringMessage(TypeNames.AUTH_REQUEST, userID);
+            return  MessageBuilder.requestMessage().addType(TypeNames.AUTH_REQUEST).addContent(userID).build();
         }
 
         public static Message fileRequest(String fileName) {
-            return new StringMessage(TypeNames.FILE_REQUEST, fileName);
+            return  MessageBuilder.requestMessage().addType(TypeNames.FILE_REQUEST).addContent(fileName).build();
         }
     }
 

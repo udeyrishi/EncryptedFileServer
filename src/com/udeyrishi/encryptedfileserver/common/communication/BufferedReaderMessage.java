@@ -9,9 +9,10 @@ import java.net.SocketException;
 /**
  * Created by rishi on 2016-03-30.
  */
-public class BufferedReaderMessage implements Message {
+class BufferedReaderMessage implements Message {
     private final BufferedReader reader;
     private final boolean autoCloseStream;
+    private final boolean readUntilNewLine;
 
     private String messageContent = null;
     private String typeName = null;
@@ -19,13 +20,15 @@ public class BufferedReaderMessage implements Message {
     // This flag is used to differentiate between no-content streamed messages vs. yet-uninitialised ones
     private boolean isRealMessageContentNull = false;
 
-    public BufferedReaderMessage(BufferedReader reader, boolean autoCloseReader) {
+    BufferedReaderMessage(BufferedReader reader, boolean autoCloseReader, boolean readUntilNewLine) {
         this.reader = Preconditions.checkNotNull(reader, "reader");
         this.autoCloseStream = autoCloseReader;
+        this.readUntilNewLine = readUntilNewLine;
     }
 
-    public BufferedReaderMessage(String typeName, BufferedReader contentReader, boolean autoCloseStream) {
-        this(contentReader, autoCloseStream);
+    BufferedReaderMessage(String typeName, BufferedReader contentReader, boolean autoCloseStream,
+                                 boolean readUntilNewLine) {
+        this(contentReader, autoCloseStream, readUntilNewLine);
         this.typeName = Preconditions.checkNotNull(typeName, "typeName");
     }
 
@@ -64,19 +67,23 @@ public class BufferedReaderMessage implements Message {
     }
 
     private String readFromReader() throws IOException {
-//        StringBuilder contents = new StringBuilder();
-//
-//        String line;
-//        while((line = reader.readLine()) != null) {
-//            contents.append(line);
-//        }
-//
-//        String contentsString = contents.toString();
-//        return contentsString.isEmpty() ? null : contentsString;
-        String messageRead = reader.readLine();
-        if (messageRead == null) {
-            throw new SocketException("Null message received. Socket is suddenly terminated from cliet side.");
+        if (readUntilNewLine) {
+            String messageRead = reader.readLine();
+            if (messageRead == null) {
+                throw new SocketException("Null message received. Socket is suddenly terminated from client side.");
+            }
+            return messageRead;
         }
-        return messageRead;
+        else {
+            StringBuilder contents = new StringBuilder();
+
+            String line;
+            while((line = reader.readLine()) != null) {
+                contents.append(line);
+            }
+
+            return contents.toString();
+        }
+
     }
 }
