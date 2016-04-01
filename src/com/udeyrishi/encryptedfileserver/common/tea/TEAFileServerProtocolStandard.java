@@ -8,6 +8,8 @@ import com.udeyrishi.encryptedfileserver.common.communication.MessageBuilder;
  */
 public class TEAFileServerProtocolStandard {
 
+    public static final int ENCRYPTION_KEY_BIT_COUNT = 256;
+
     public static class SpecialContent {
         public static final String NULL_CONTENT = "No-Content";
     }
@@ -27,30 +29,28 @@ public class TEAFileServerProtocolStandard {
 
     public static class StandardMessages {
         public static final Message ACCESS_DENIED = MessageBuilder.responseMessage().addType(TypeNames.AUTH_RESPONSE)
-                                                                        .addContent("Access-Denied").build();
+                .addContent("Access-Denied").build();
 
         public static final Message ACCESS_GRANTED = MessageBuilder.responseMessage().addType(TypeNames.AUTH_RESPONSE)
-                                                                         .addContent("Access-Granted").build();
+                .addContent("Access-Granted").build();
 
-        public static final Message BAD_FILE_REQUEST_RESPONSE =  MessageBuilder.responseMessage()
-                                                                    .addType(TypeNames.FILE_RESPONSE_FAILURE)
-                                                                    .addContent("Bad-Request").build();
+        public static final Message BAD_FILE_REQUEST_RESPONSE = MessageBuilder.responseMessage()
+                .addType(TypeNames.FILE_RESPONSE_FAILURE)
+                .addContent("Bad-Request").build();
 
-        public static final Message FILE_NOT_FOUND_RESPONSE =  MessageBuilder.responseMessage()
-                                                                        .addType(TypeNames.FILE_RESPONSE_FAILURE)
-                                                                        .addContent("File-Not-Found").build();
+        public static final Message FILE_NOT_FOUND_RESPONSE = MessageBuilder.responseMessage()
+                .addType(TypeNames.FILE_RESPONSE_FAILURE)
+                .addContent("File-Not-Found").build();
 
-        public static final Message TERMINATION_REQUEST =  MessageBuilder.requestMessage()
-                                                            .addType(TypeNames.TERMINATION_REQUEST).build();
+        public static final Message TERMINATION_REQUEST = MessageBuilder.requestMessage()
+                .addType(TypeNames.TERMINATION_REQUEST).build();
 
         public static Message authenticationRequest(String userID) {
-            return  MessageBuilder.requestMessage().addType(TypeNames.AUTH_REQUEST).addContent(userID).build();
+            return MessageBuilder.requestMessage().addType(TypeNames.AUTH_REQUEST).addContent(userID).build();
         }
 
         public static Message fileRequest(String fileName) {
-            return  MessageBuilder.requestMessage().addType(TypeNames.FILE_REQUEST).addContent(fileName).build();
+            return MessageBuilder.requestMessage().addType(TypeNames.FILE_REQUEST).addContent(fileName).build();
         }
     }
-
-    public static final int ENCRYPTION_KEY_BIT_COUNT = 256;
 }

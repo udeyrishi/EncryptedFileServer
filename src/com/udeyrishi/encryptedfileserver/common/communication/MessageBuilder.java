@@ -15,7 +15,8 @@ public class MessageBuilder {
     private boolean autoCloseStream = false;
     private byte[] attachment = null;
 
-    private MessageBuilder() {    }
+    private MessageBuilder() {
+    }
 
     public static MessageBuilder requestMessage() {
         return new MessageBuilder();
@@ -71,8 +72,7 @@ public class MessageBuilder {
 
         if (entireMessageReader != null) {
             message = new BufferedReaderMessage(entireMessageReader, autoCloseStream);
-        }
-        else if (contentReader != null) {
+        } else if (contentReader != null) {
             message = new BufferedReaderMessage(type, contentReader, autoCloseStream);
         } else {
             message = new Message(type, content);

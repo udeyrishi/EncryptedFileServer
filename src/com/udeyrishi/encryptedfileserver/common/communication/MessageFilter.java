@@ -5,5 +5,6 @@ package com.udeyrishi.encryptedfileserver.common.communication;
  */
 public interface MessageFilter {
     Message incomingMessageFilter(Message message);
+
     Message outgoingMessageFilter(Message message);
 }

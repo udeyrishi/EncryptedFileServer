@@ -10,8 +10,23 @@ import java.util.logging.Logger;
  * Created by rishi on 2016-03-30.
  */
 public class CommunicationProtocol {
-    private static Logger logger = LoggerFactory.createConsoleLogger(CommunicationProtocol.class.getName());
+    public static final CommunicationProtocolState TERMINATED_STATE = new CommunicationProtocolState() {
+        @Override
+        public void messageReceived(CommunicationProtocol protocol, Message message) throws IllegalStateException {
+            throw new IllegalStateException("Can't receive messages when protocol is terminated.");
+        }
 
+        @Override
+        public Message nextTransmissionMessage(CommunicationProtocol protocol) {
+            throw new IllegalStateException("Can't transmit messages when protocol is terminated.");
+        }
+
+        @Override
+        public void interrupt(CommunicationProtocol protocol) throws IllegalStateException {
+            // no-op
+        }
+    };
+    private static Logger logger = LoggerFactory.createConsoleLogger(CommunicationProtocol.class.getName());
     private CommunicationProtocolState state;
     private MessageFilter filter;
 
@@ -56,21 +71,4 @@ public class CommunicationProtocol {
         logger.log(Level.FINER, "Interrupted");
         state.interrupt(this);
     }
-
-    public static final CommunicationProtocolState TERMINATED_STATE = new CommunicationProtocolState() {
-        @Override
-        public void messageReceived(CommunicationProtocol protocol, Message message) throws IllegalStateException {
-            throw new IllegalStateException("Can't receive messages when protocol is terminated.");
-        }
-
-        @Override
-        public Message nextTransmissionMessage(CommunicationProtocol protocol) {
-            throw new IllegalStateException("Can't transmit messages when protocol is terminated.");
-        }
-
-        @Override
-        public void interrupt(CommunicationProtocol protocol) throws IllegalStateException {
-            // no-op
-        }
-    };
 }

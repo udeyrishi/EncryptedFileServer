@@ -1,11 +1,11 @@
 package com.udeyrishi.encryptedfileserver.server;
 
-import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
-import com.udeyrishi.encryptedfileserver.common.utils.ArgumentParser;
-import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
-import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
+import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
+import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
+import com.udeyrishi.encryptedfileserver.common.utils.ArgumentParser;
+import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.server.fileserverstates.FileTransferState;
 import com.udeyrishi.encryptedfileserver.server.fileserverstates.TEAAuthenticationState;
 
@@ -52,8 +52,8 @@ public class Main {
             };
 
             MultiThreadedServer server = new CommunicationProtocolServer(arguments.<Integer>get(PORT),
-                                                                 protocolFactory,
-                                                                 Executors.newCachedThreadPool());
+                    protocolFactory,
+                    Executors.newCachedThreadPool());
             Runtime.getRuntime().addShutdownHook(new ServerShutdownHook(server));
             server.run();
 
@@ -65,7 +65,7 @@ public class Main {
     }
 
     private static ConcurrentHashMap<String, TEAKey> getAuthenticationKeys(String pathToKeys)
-                                                                    throws IOException, BadTEAKeysFileException {
+            throws IOException, BadTEAKeysFileException {
 
         ConcurrentHashMap<String, TEAKey> userIDsAndKeys = new ConcurrentHashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(pathToKeys))) {
@@ -76,7 +76,7 @@ public class Main {
                 String key = parts[1];
                 try {
                     userIDsAndKeys.put(userID, new TEAKey(TEAFileServerProtocolStandard.ENCRYPTION_KEY_BIT_COUNT,
-                                                          key));
+                            key));
                 } catch (IllegalArgumentException e) {
                     throw new BadTEAKeysFileException(pathToKeys, e);
                 }
@@ -91,7 +91,7 @@ public class Main {
         parser.addPositionalArg(PORT, 0, parser.createIntegerParser("port"));
         parser.addPositionalArg(KEYS_FILE_PATH, 1, parser.createStringParser("Path to the keys file"));
         parser.addOptionalArg(FILE_SERVER_ROOT, parser.createStringParser("Path to the file server root"),
-                              DEFAULT_ROOT);
+                DEFAULT_ROOT);
         parser.process();
         return parser;
     }

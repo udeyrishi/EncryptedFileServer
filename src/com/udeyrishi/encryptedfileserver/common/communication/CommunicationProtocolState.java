@@ -7,6 +7,8 @@ import java.io.IOException;
  */
 public interface CommunicationProtocolState {
     void messageReceived(CommunicationProtocol protocol, Message message) throws IOException, BadMessageException;
+
     Message nextTransmissionMessage(CommunicationProtocol protocol);
+
     void interrupt(CommunicationProtocol protocol);
 }

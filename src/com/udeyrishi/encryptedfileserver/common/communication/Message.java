@@ -20,7 +20,12 @@ public class Message {
         this.messageContent = messageContent;
     }
 
-    protected Message() {}
+    protected Message() {
+    }
+
+    private static boolean nullSafeComparison(Object first, Object second) {
+        return first == second || !(first == null || second == null) && first.equals(second);
+    }
 
     public String getTypeName() throws IOException, BadMessageException {
         return typeName;
@@ -40,12 +45,9 @@ public class Message {
             return false;
         }
 
-        if (this.getTypeName().equals(second.getTypeName()) &&
-                nullSafeComparison(this.getMessageContents(), second.getMessageContents())) {
-            return true;
-        }
+        return this.getTypeName().equals(second.getTypeName()) &&
+                nullSafeComparison(this.getMessageContents(), second.getMessageContents());
 
-        return false;
     }
 
     public String serializeMessage() throws IOException, BadMessageException {
@@ -68,9 +70,5 @@ public class Message {
 
     public void addAttachment(byte[] attachment) {
         this.attachment = attachment;
-    }
-
-    private static boolean nullSafeComparison(Object first, Object second) {
-        return first == second || !(first == null || second == null) && first.equals(second);
     }
 }

@@ -4,9 +4,6 @@ import com.udeyrishi.encryptedfileserver.common.communication.*;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,7 +34,7 @@ public class FileTransferState implements CommunicationProtocolState {
         if (interrupted) {
             protocol.setState(CommunicationProtocol.TERMINATED_STATE);
             return MessageBuilder.responseMessage().addType(TEAFileServerProtocolStandard.TypeNames.INTERRUPT_NOTIFICATION)
-                                                    .build();
+                    .build();
         }
 
         if (lastFileRequested == null) {
@@ -46,7 +43,7 @@ public class FileTransferState implements CommunicationProtocolState {
 
         Message response;
         try {
-            byte[] attachment  = Files.readAllBytes(Paths.get(root, lastFileRequested));
+            byte[] attachment = Files.readAllBytes(Paths.get(root, lastFileRequested));
             response = MessageBuilder.responseMessage()
                     .addType(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)
                     .addContent(lastFileRequested)

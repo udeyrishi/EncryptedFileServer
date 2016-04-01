@@ -5,5 +5,6 @@ package com.udeyrishi.encryptedfileserver.server;
  */
 public interface MultiThreadedServer extends Runnable {
     void shutDown();
+
     void forceShutDown();
 }

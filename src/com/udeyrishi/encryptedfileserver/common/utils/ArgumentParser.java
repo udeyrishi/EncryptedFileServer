@@ -57,7 +57,7 @@ public class ArgumentParser {
 
     @SuppressWarnings("unchecked")
     public <T> T get(String argName) {
-        return (T)parsingResults.get(argName);
+        return (T) parsingResults.get(argName);
     }
 
     private void parseArgs() {
@@ -91,12 +91,6 @@ public class ArgumentParser {
 
     public <T> void addOptionalArg(String argName, Parser<T> parser) {
         this.addOptionalArg(argName, parser, null);
-    }
-
-    public interface Parser<T> {
-        String getDescription();
-        String getParsedTypeName();
-        T parse(String argValue) throws IllegalArgumentException;
     }
 
     public Parser<Integer> createIntegerParser(final String argumentDescription) {
@@ -141,5 +135,13 @@ public class ArgumentParser {
                 return argValue;
             }
         };
+    }
+
+    public interface Parser<T> {
+        String getDescription();
+
+        String getParsedTypeName();
+
+        T parse(String argValue) throws IllegalArgumentException;
     }
 }

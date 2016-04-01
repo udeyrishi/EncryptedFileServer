@@ -1,8 +1,8 @@
 package com.udeyrishi.encryptedfileserver.server;
 
+import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
-import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -110,8 +110,8 @@ public class CommunicationProtocolServer implements MultiThreadedServer {
         } catch (IOException e) {
             serverSocket = null;
             logger.log(Level.SEVERE, String.format("Failed to create server socket on port %d with message: %s",
-                                                   port,
-                                                   e.getMessage()), e);
+                    port,
+                    e.getMessage()), e);
         }
         return serverSocket;
     }
@@ -125,7 +125,7 @@ public class CommunicationProtocolServer implements MultiThreadedServer {
         } catch (SocketException e) {
             socket = null;
             logger.log(Level.FINE, "SocketException caught in CommunicationProtocolServer.accept. Ignore this if a shutdown was " +
-                                    "requested.");
+                    "requested.");
         } catch (IOException e) {
             socket = null;
             logger.log(Level.SEVERE, "Failed to accept request over server socket with message: " + e.getMessage(), e);

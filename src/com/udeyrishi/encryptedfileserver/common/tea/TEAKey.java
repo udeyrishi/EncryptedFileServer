@@ -25,12 +25,18 @@ public class TEAKey {
 
     }
 
+    private static boolean isKeySizeValid(BigInteger key, int bitCount) {
+        // "ff" (bitCount/8) times == (bitCount/8) bytes == bitCount bits
+        final BigInteger maxKeyVal = new BigInteger(new String(new char[bitCount / 8]).replace("\0", "ff"), 16);
+        return key.compareTo(maxKeyVal) <= 0 && key.compareTo(BigInteger.ZERO) >= 0;
+    }
+
     public long getPart(int partNumber) throws IllegalArgumentException {
         final int upperBound = numLongs() - 1;
         if (partNumber > upperBound || partNumber < 0) {
             throw new IllegalArgumentException(String.format("partNumber needs to be between 0 and %d", upperBound));
         }
-        return key.shiftRight(64*(upperBound-partNumber)).longValue();
+        return key.shiftRight(64 * (upperBound - partNumber)).longValue();
     }
 
     public long[] getAsLongArray() {
@@ -49,13 +55,7 @@ public class TEAKey {
     }
 
     private int numLongs() {
-        return bitCount/64;
-    }
-
-    private static boolean isKeySizeValid(BigInteger key, int bitCount) {
-        // "ff" (bitCount/8) times == (bitCount/8) bytes == bitCount bits
-        final BigInteger maxKeyVal = new BigInteger(new String(new char[bitCount/8]).replace("\0", "ff"), 16);
-        return key.compareTo(maxKeyVal) <= 0 && key.compareTo(BigInteger.ZERO) >= 0;
+        return bitCount / 64;
     }
 
 }

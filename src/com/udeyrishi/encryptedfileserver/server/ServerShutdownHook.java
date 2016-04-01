@@ -24,7 +24,7 @@ public class ServerShutdownHook extends Thread {
             case 0:
                 ++count;
                 logger.log(Level.INFO, "Shutdown interrupt received. Attempting graceful shut down. Interrupt again to " +
-                                       "attempt force shut down");
+                        "attempt force shut down");
                 server.shutDown();
                 break;
             case 1:
