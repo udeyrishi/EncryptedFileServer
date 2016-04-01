@@ -5,6 +5,7 @@ import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandar
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -43,13 +44,12 @@ public class FileTransferState implements CommunicationProtocolState {
 
         Message response;
         try {
-            byte[] attachment = Files.readAllBytes(Paths.get(root, lastFileRequested));
+            InputStream attachmentStream = Files.newInputStream(Paths.get(root, lastFileRequested));
             response = MessageBuilder.responseMessage()
                     .addType(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)
                     .addContent(lastFileRequested)
-                    .addAttachment(attachment)
+                    .addAttachmentStream(attachmentStream)
                     .build();
-
         } catch (IOException e) {
             response = TEAFileServerProtocolStandard.StandardMessages.FILE_NOT_FOUND_RESPONSE;
         }

@@ -3,6 +3,7 @@ package com.udeyrishi.encryptedfileserver.common.communication;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 
 /**
  * Created by rishi on 2016-03-31.
@@ -13,7 +14,7 @@ public class MessageBuilder {
     private BufferedReader contentReader = null;
     private BufferedReader entireMessageReader = null;
     private boolean autoCloseStream = false;
-    private byte[] attachment = null;
+    private InputStream attachmentStream = null;
 
     private MessageBuilder() {
     }
@@ -56,8 +57,8 @@ public class MessageBuilder {
         return this;
     }
 
-    public MessageBuilder addAttachment(byte[] attachment) {
-        this.attachment = attachment;
+    public MessageBuilder addAttachmentStream(InputStream attachmentStream) {
+        this.attachmentStream = attachmentStream;
         return this;
     }
 
@@ -78,7 +79,7 @@ public class MessageBuilder {
             message = new Message(type, content);
         }
 
-        message.addAttachment(attachment);
+        message.addAttachmentStream(attachmentStream);
         return message;
     }
 }

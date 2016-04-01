@@ -28,8 +28,8 @@ class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        try (OutputStream attachmentStream = socket.getOutputStream();
-             PrintWriter messageStream = new PrintWriter(attachmentStream, true);
+        try (OutputStream attachmentOutStream = socket.getOutputStream();
+             PrintWriter messageStream = new PrintWriter(attachmentOutStream, true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             while (true) {
@@ -43,14 +43,17 @@ class ClientHandler implements Runnable {
                 if (shouldTerminate()) {
                     break;
                 }
+
                 Message response = protocol.getNextTransmissionMessage();
-                messageStream.println(response.serializeMessage());
-                byte[] attachment = response.getAttachment();
-                if (attachment != null) {
+                String messageContents = response.serializeMessage();
+                messageStream.println(messageContents);
+
+                InputStream attachmentInStream = response.getAttachmentStream();
+                if (attachmentInStream != null) {
                     messageStream.println("\n");
-                    attachmentStream.write(attachment);
-                    attachmentStream.flush();
+                    sendAttachment(attachmentOutStream, attachmentInStream);
                 }
+
                 logger.log(Level.FINEST, "Tx message sent");
                 if (shouldTerminate()) {
                     break;
@@ -70,6 +73,15 @@ class ClientHandler implements Runnable {
         }
 
         logger.log(Level.FINER, "Shutting down client handler");
+    }
+
+    private void sendAttachment(OutputStream attachmentOutStream, InputStream attachmentInStream) throws IOException {
+        int count;
+        byte[] buffer = new byte[8192];
+        while ((count = attachmentInStream.read(buffer)) > 0) {
+            attachmentOutStream.write(buffer, 0, count);
+        }
+        attachmentOutStream.flush();
     }
 
     private boolean shouldTerminate() {

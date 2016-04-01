@@ -4,6 +4,7 @@ import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandar
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by rishi on 2016-03-30.
@@ -11,9 +12,9 @@ import java.io.IOException;
 public class Message {
     private static final String FORMATTER_PATTERN = "type:%s;content:%s";
 
-    protected String messageContent = null;
-    protected String typeName = null;
-    private byte[] attachment = null;
+    String messageContent = null;
+    String typeName = null;
+    private InputStream attachmentStream = null;
 
     Message(String typeName, String messageContent) {
         this.typeName = Preconditions.checkNotNull(typeName, "typeName");
@@ -64,11 +65,11 @@ public class Message {
         return String.format(FORMATTER_PATTERN, type, contents);
     }
 
-    public byte[] getAttachment() {
-        return attachment;
+    public InputStream getAttachmentStream() {
+        return attachmentStream;
     }
 
-    public void addAttachment(byte[] attachment) {
-        this.attachment = attachment;
+    void addAttachmentStream(InputStream attachmentStream) {
+        this.attachmentStream = attachmentStream;
     }
 }
