@@ -33,6 +33,7 @@ class ClientHandler implements Runnable {
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             while (true) {
+                // TODO: The shouldTerminate() thingie doesn't work. It won't send back an interrupt message ever
                 try {
                     Message received = MessageBuilder.requestMessage().addTypeAndContent(in).autoCloseReader(false).build();
                     protocol.processReceivedMessage(received);
