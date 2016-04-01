@@ -1,10 +1,77 @@
 package com.udeyrishi.encryptedfileserver.client;
 
+import com.udeyrishi.encryptedfileserver.client.clientstates.TEAAuthenticationState;
+import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
+import com.udeyrishi.encryptedfileserver.common.tea.BadTEAKeysFileException;
+import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
+import com.udeyrishi.encryptedfileserver.common.tea.TEAKeyReader;
+import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.utils.ArgumentParser;
+import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Created by rishi on 2016-03-28.
  */
 public class Main {
+    private static Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
+    private static final String PORT = "port";
+    private static final String KEY = "key";
+    private static final String HOSTNAME = "hostname";
+    private static final String DEFAULT_HOSTNAME = "localhost";
+
     public static void main(String[] args) {
-        System.out.println("Hello, World from the client!");
+
+        ArgumentParser arguments;
+        try {
+            arguments = getArgumentParser(args);
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            Map<String, TEAKey> authKeys = new TEAKeyReader().getAuthenticationKeys(KEY);
+
+            if (authKeys.size() != 1) {
+                throw new BadTEAKeysFileException(arguments.<String>get(KEY));
+            }
+
+            String userID = null;
+            TEAKey teaKey = null;
+
+            // Has only 1
+            for (Map.Entry<String, TEAKey> authKey : authKeys.entrySet()) {
+                userID = authKey.getKey();
+                teaKey = authKey.getValue();
+            }
+
+            logger.log(Level.FINER, "Key read from file: " + arguments.<String>get(KEY));
+            logger.log(Level.FINER, "Hostname: " + arguments.<String>get(HOSTNAME));
+            logger.log(Level.FINER, "Server port: " + arguments.<Integer>get(PORT).toString());
+
+            CommunicationProtocolClient client = new CommunicationProtocolClient(
+                    arguments.<String>get(HOSTNAME),
+                    arguments.<Integer>get(PORT),
+                    new CommunicationProtocol(new TEAAuthenticationState(userID), new TEAMessageFilter(teaKey)));
+
+            client.run();
+
+        } catch (IOException | BadTEAKeysFileException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
+        }
+    }
+
+    private static ArgumentParser getArgumentParser(String[] args) throws IllegalArgumentException {
+        ArgumentParser parser = new ArgumentParser(args);
+        parser.addPositionalArg(PORT, parser.createIntegerParser("The server's port"));
+        parser.addPositionalArg(KEY, parser.createStringParser("The path to the key file"));
+        parser.addOptionalArg(HOSTNAME, parser.createStringParser("The server's complete hostname."), DEFAULT_HOSTNAME);
+        parser.process();
+        return parser;
     }
 }
