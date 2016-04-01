@@ -52,6 +52,8 @@ class ClientHandler implements Runnable {
                 if (attachmentInStream != null) {
                     messageStream.println("\n");
                     sendAttachment(attachmentOutStream, attachmentInStream);
+                    // attachmentInStream is use and throw
+                    attachmentInStream.close();
                 }
 
                 logger.log(Level.FINEST, "Tx message sent");
