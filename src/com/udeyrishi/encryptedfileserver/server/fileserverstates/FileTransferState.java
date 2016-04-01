@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
@@ -45,13 +46,14 @@ public class FileTransferState implements CommunicationProtocolState {
 
         Message response;
         try {
+            byte[] attachment  = Files.readAllBytes(Paths.get(root, lastFileRequested));
             response = MessageBuilder.responseMessage()
                     .addType(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)
-                    .addContent(new BufferedReader(new FileReader(Paths.get(root, lastFileRequested).toFile())))
-                    .autoCloseStream(true)
+                    .addContent(lastFileRequested)
+                    .addAttachment(attachment)
                     .build();
 
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             response = TEAFileServerProtocolStandard.StandardMessages.FILE_NOT_FOUND_RESPONSE;
         }
         lastFileRequested = null;
