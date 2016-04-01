@@ -21,7 +21,7 @@ public class Main {
     private static Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
     private static final String PORT = "port";
     private static final String KEY = "key";
-    private static final String HOSTNAME = "hostname";
+    private static final String HOSTNAME = "host";
     private static final String DEFAULT_HOSTNAME = "localhost";
 
     public static void main(String[] args) {
@@ -35,7 +35,7 @@ public class Main {
         }
 
         try {
-            Map<String, TEAKey> authKeys = new TEAKeyReader().getAuthenticationKeys(KEY);
+            Map<String, TEAKey> authKeys = new TEAKeyReader().getAuthenticationKeys(arguments.<String>get(KEY));
 
             if (authKeys.size() != 1) {
                 throw new BadTEAKeysFileException(arguments.<String>get(KEY));

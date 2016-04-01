@@ -31,7 +31,7 @@ class CommunicationProtocolClient implements Runnable {
     @Override
     public void run() {
         try (Socket socket = new Socket(hostname, port);
-             PrintWriter out = new PrintWriter(socket.getOutputStream());
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              InputStream attachmentIn = socket.getInputStream();
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 

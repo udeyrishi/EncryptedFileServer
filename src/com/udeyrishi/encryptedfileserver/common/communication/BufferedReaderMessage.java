@@ -66,7 +66,7 @@ class BufferedReaderMessage extends Message {
     private String readFromReader() throws IOException {
         String messageRead = reader.readLine();
         if (messageRead == null) {
-            throw new SocketException("Null message received. Socket is suddenly terminated from client side.");
+            throw new SocketException("Null message received. Socket is suddenly terminated from the other side.");
         }
         return messageRead;
     }
