@@ -12,6 +12,7 @@ public class TEAFileServerProtocolStandard {
 
     public static class SpecialContent {
         public static final String NULL_CONTENT = "No-Content";
+        public static final String NULL_ESCAPE = "\\";
     }
 
     public static class TypeNames {
