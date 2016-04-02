@@ -1,6 +1,7 @@
 package com.udeyrishi.encryptedfileserver.server.message;
 
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
+import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,7 +10,6 @@ import java.io.InputStream;
  * Created by rishi on 2016-04-02.
  */
 public class OutgoingResponseMessage extends OutgoingMessage {
-    private static final String FORMATTER_PATTERN = "type:%s;content:%s\n";
     private final InputStream attachmentStream;
 
     public OutgoingResponseMessage(String type, String content) {
@@ -23,11 +23,12 @@ public class OutgoingResponseMessage extends OutgoingMessage {
 
     @Override
     public InputStream getStream() {
-        final byte[] firstLine = String.format(FORMATTER_PATTERN, getType(), getContent()).getBytes();
+        final byte[] firstLine = TEAFileServerProtocolStandard.StandardMessages.serializedMessage(getType(), getContent())
+                                .getBytes();
 
         return new InputStream() {
-            int firstLineIndex = 0;
-            
+            private int firstLineIndex = 0;
+
             @Override
             public int read() throws IOException {
                 if (firstLineIndex < firstLine.length) {
