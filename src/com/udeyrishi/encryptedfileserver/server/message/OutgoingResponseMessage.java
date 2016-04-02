@@ -1,7 +1,6 @@
 package com.udeyrishi.encryptedfileserver.server.message;
 
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
-import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +22,7 @@ public class OutgoingResponseMessage extends OutgoingMessage {
 
     @Override
     public InputStream getStream() {
-        final byte[] firstLine = TEAFileServerProtocolStandard.StandardMessages.serializedMessage(getType(), getContent())
-                                .getBytes();
+        final byte[] firstLine = serializedMessage(getType(), getContent()).getBytes();
 
         return new InputStream() {
             private int firstLineIndex = 0;

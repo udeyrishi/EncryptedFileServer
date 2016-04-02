@@ -9,8 +9,6 @@ import com.udeyrishi.encryptedfileserver.common.communication.MessageBuilder;
 public class TEAFileServerProtocolStandard {
 
     public static final int ENCRYPTION_KEY_BIT_COUNT = 256;
-    private static final String FORMATTER_PATTERN = "type:%s;content:%s\n";
-
 
     public static class SpecialContent {
         public static final String NULL_CONTENT = "No-Content";
@@ -54,10 +52,6 @@ public class TEAFileServerProtocolStandard {
 
         public static Message fileRequest(String fileName) {
             return MessageBuilder.requestMessage().addType(TypeNames.FILE_REQUEST).addContent(fileName).build();
-        }
-
-        public static String serializedMessage(String type, String content) {
-            return String.format(FORMATTER_PATTERN, type, content);
         }
     }
 }
