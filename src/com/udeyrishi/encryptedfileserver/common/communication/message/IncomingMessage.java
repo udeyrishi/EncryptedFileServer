@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  * Created by rishi on 2016-04-02.
  */
 public abstract class IncomingMessage {
-    private static final String REGEX_PATTERN = "\\s*type\\s*:\\s*(.+?)\\s*;\\s*content\\s*:(.+)";
+    private static final String REGEX_PATTERN = "\\s*type\\s*:\\s*(.+?)\\s*;\\s*content\\s*:(.+)\n";
 
     protected final InputStream stream;
 
@@ -45,7 +45,7 @@ public abstract class IncomingMessage {
 
     }
 
-    protected Pair<String, String> parseMessage(String message) throws BadMessageException {
+    protected static Pair<String, String> parseMessage(String message) throws BadMessageException {
         String type;
         String content;
 
