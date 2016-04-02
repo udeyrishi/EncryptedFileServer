@@ -51,7 +51,6 @@ class ClientHandler implements Runnable {
 
                 InputStream attachmentInStream = response.getAttachmentStream();
                 if (attachmentInStream != null) {
-                    messageStream.println("\n");
                     sendAttachment(attachmentOutStream, attachmentInStream);
                     // attachmentInStream is use and throw
                     attachmentInStream.close();

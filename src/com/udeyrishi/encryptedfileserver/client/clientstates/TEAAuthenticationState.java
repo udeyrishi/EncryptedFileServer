@@ -15,15 +15,17 @@ import java.nio.file.AccessDeniedException;
  */
 public class TEAAuthenticationState implements CommunicationProtocolState {
     private final String userID;
+    private final CommunicationProtocolState nextState;
 
-    public TEAAuthenticationState(String userID) {
+    public TEAAuthenticationState(String userID, CommunicationProtocolState nextState) {
         this.userID = Preconditions.checkNotNull(userID, "userID");
+        this.nextState = Preconditions.checkNotNull(nextState, "nextState");
     }
 
     @Override
     public void messageReceived(CommunicationProtocol protocol, Message message) throws IOException, BadMessageException {
         if (message.isEqualTo(TEAFileServerProtocolStandard.StandardMessages.ACCESS_GRANTED)) {
-            protocol.setState(new FileReceivalState());
+            protocol.setState(nextState);
         } else if (message.isEqualTo(TEAFileServerProtocolStandard.StandardMessages.ACCESS_DENIED)) {
             throw new AccessDeniedException("Invalid authentication userID-key combination");
         } else {

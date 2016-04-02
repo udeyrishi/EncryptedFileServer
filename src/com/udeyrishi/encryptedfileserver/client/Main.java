@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.client;
 
+import com.udeyrishi.encryptedfileserver.client.clientstates.FileReceivalState;
 import com.udeyrishi.encryptedfileserver.client.clientstates.TEAAuthenticationState;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.tea.BadTEAKeysFileException;
@@ -9,7 +10,9 @@ import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.ArgumentParser;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +60,9 @@ public class Main {
             CommunicationProtocolClient client = new CommunicationProtocolClient(
                     arguments.<String>get(HOSTNAME),
                     arguments.<Integer>get(PORT),
-                    new CommunicationProtocol(new TEAAuthenticationState(userID), new TEAMessageFilter(teaKey)));
+                    new CommunicationProtocol(new TEAAuthenticationState(userID,
+                            new FileReceivalState(new BufferedReader(new InputStreamReader(System.in)), System.out)),
+                                              new TEAMessageFilter(teaKey)));
 
             client.run();
 
