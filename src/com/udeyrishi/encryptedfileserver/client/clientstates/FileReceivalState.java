@@ -40,13 +40,11 @@ public class FileReceivalState implements CommunicationProtocolState {
 
         if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_FAILURE) &&
                 message.getContent().equals(TEAFileServerProtocolStandard.SpecialContent.FILE_NOT_FOUND)) {
-            userOut.println(String.format("Error: File '%s' Not Found", lastFileRequested));
+            userOut.println(String.format("Error: File '%s' not found on the server", lastFileRequested));
 
         } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)) {
-
             if (message.getContent().equals(lastFileRequested)) {
                 downloadAttachment(((IncomingResponseMessage) message).getAttachmentStream());
-                userOut.println("File downloaded at " + downloadPath);
             } else {
                 logger.log(Level.SEVERE, "Incorrect file received: " + message.getContent());
                 throw new BadMessageException("Incorrect file received: " + message.getContent());
@@ -60,17 +58,20 @@ public class FileReceivalState implements CommunicationProtocolState {
     }
 
     private void downloadAttachment(InputStream attachmentStream) throws IOException {
-        FileOutputStream fileSaveStream = new FileOutputStream(downloadPath);
-        int count;
-        byte[] buffer = new byte[8192];
-        while ((count = attachmentStream.read(buffer)) > 0) {
-            fileSaveStream.write(buffer, 0, count);
-            if (count < 8192) {
-                break;
+        try (FileOutputStream fileSaveStream = new FileOutputStream(downloadPath)) {
+            int count;
+            byte[] buffer = new byte[8192];
+            while ((count = attachmentStream.read(buffer)) > 0) {
+                fileSaveStream.write(buffer, 0, count);
+                if (count < 8192) {
+                    break;
+                }
             }
+            fileSaveStream.flush();
+            userOut.println("File downloaded at " + downloadPath);
+        } catch (FileNotFoundException e) {
+            userOut.println("Download path doesn't exist: " + downloadPath);
         }
-        fileSaveStream.flush();
-        fileSaveStream.close();
     }
 
     @Override
@@ -85,6 +86,7 @@ public class FileReceivalState implements CommunicationProtocolState {
             lastFileRequested = userIn.readLine();
             userOut.print("Download path>> ");
             downloadPath = userIn.readLine();
+
             return new OutgoingRequestMessage(TEAFileServerProtocolStandard.TypeNames.FILE_REQUEST, lastFileRequested);
         } catch (IOException e) {
             // TODO: Fix this
