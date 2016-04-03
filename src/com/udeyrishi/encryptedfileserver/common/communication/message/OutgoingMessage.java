@@ -23,6 +23,10 @@ public abstract class OutgoingMessage {
         }
     }
 
+    protected static String serializedMessage(String type, String content) {
+        return String.format(FORMATTER_PATTERN, type, content);
+    }
+
     protected String getType() {
         return type;
     }
@@ -32,8 +36,4 @@ public abstract class OutgoingMessage {
     }
 
     public abstract InputStream getStream();
-
-    protected static String serializedMessage(String type, String content) {
-        return String.format(FORMATTER_PATTERN, type, content);
-    }
 }

@@ -1,6 +1,4 @@
-package com.udeyrishi.encryptedfileserver.client.message;
-
-import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
+package com.udeyrishi.encryptedfileserver.common.communication.message;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,13 +1,15 @@
 package com.udeyrishi.encryptedfileserver.common.tea;
 
-import com.udeyrishi.encryptedfileserver.common.communication.Message;
-import com.udeyrishi.encryptedfileserver.common.communication.MessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 /**
  * Created by rishi on 2016-03-30.
  */
-public class TEAMessageFilter implements MessageFilter {
+public class TEAMessageFilter implements IncomingMessageFilter, OutgoingMessageFilter {
 
     private final TEAKey key;
 
@@ -16,13 +18,14 @@ public class TEAMessageFilter implements MessageFilter {
         this.key = Preconditions.checkNotNull(key, "key");
     }
 
+
     @Override
-    public Message incomingMessageFilter(Message message) {
+    public IncomingMessage filter(IncomingMessage message) {
         return message;
     }
 
     @Override
-    public Message outgoingMessageFilter(Message message) {
+    public OutgoingMessage filter(OutgoingMessage message) {
         return message;
     }
 }

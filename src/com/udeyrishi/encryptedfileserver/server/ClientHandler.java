@@ -2,12 +2,14 @@ package com.udeyrishi.encryptedfileserver.server;
 
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
-import com.udeyrishi.encryptedfileserver.common.communication.Message;
-import com.udeyrishi.encryptedfileserver.common.communication.MessageBuilder;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingRequestMessage;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
+import com.udeyrishi.encryptedfileserver.common.utils.StreamUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,15 +30,14 @@ class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        try (OutputStream attachmentOutStream = socket.getOutputStream();
-             PrintWriter messageStream = new PrintWriter(attachmentOutStream, true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try (InputStream in = socket.getInputStream();
+             OutputStream out = socket.getOutputStream()) {
 
             while (true) {
                 // TODO: The shouldTerminate() thingie doesn't work. It won't send back an interrupt message ever
                 try {
-                    Message received = MessageBuilder.requestMessage().addTypeAndContent(in).autoCloseReader(false).build();
-                    protocol.processReceivedMessage(received);
+                    IncomingRequestMessage incomingRequestMessage = new IncomingRequestMessage(in);
+                    protocol.processReceivedMessage(incomingRequestMessage);
                     logger.log(Level.FINEST, "Rx message processing completed");
                 } catch (BadMessageException e) {
                     logger.log(Level.SEVERE, "Illegal message received from client. Ignoring and moving on.", e);
@@ -45,24 +46,16 @@ class ClientHandler implements Runnable {
                     break;
                 }
 
-                Message response = protocol.getNextTransmissionMessage();
-                String messageContents = response.serializeMessage();
-                messageStream.println(messageContents);
-
-                InputStream attachmentInStream = response.getAttachmentStream();
-                if (attachmentInStream != null) {
-                    sendAttachment(attachmentOutStream, attachmentInStream);
-                    // attachmentInStream is use and throw
-                    attachmentInStream.close();
-                }
+                InputStream responseStream = protocol.getNextTransmissionMessage().getStream();
+                StreamUtils.copyOverStreams(out, responseStream);
+                responseStream.close();
 
                 logger.log(Level.FINEST, "Tx message sent");
                 if (shouldTerminate()) {
                     break;
                 }
             }
-        } catch (IOException | IllegalStateException | BadMessageException e) {
-            // Catching BadMessageException from Tx side is fatal, but should be resistant to garbage from Rx side
+        } catch (IOException | IllegalStateException e) {
             logger.log(Level.SEVERE, e.toString(), e);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled exception in ClientHandler", e);
@@ -75,15 +68,6 @@ class ClientHandler implements Runnable {
         }
 
         logger.log(Level.FINER, "Shutting down client handler");
-    }
-
-    private void sendAttachment(OutputStream attachmentOutStream, InputStream attachmentInStream) throws IOException {
-        int count;
-        byte[] buffer = new byte[8192];
-        while ((count = attachmentInStream.read(buffer)) > 0) {
-            attachmentOutStream.write(buffer, 0, count);
-        }
-        attachmentOutStream.flush();
     }
 
     private boolean shouldTerminate() {

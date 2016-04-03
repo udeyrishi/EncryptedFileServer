@@ -3,14 +3,15 @@ package com.udeyrishi.encryptedfileserver.client.clientstates;
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolState;
-import com.udeyrishi.encryptedfileserver.common.communication.Message;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingResponseMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingRequestMessage;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,6 +25,7 @@ public class FileReceivalState implements CommunicationProtocolState {
     private final BufferedReader userIn;
     private boolean first = true;
     private String lastFileRequested = null;
+    private String downloadPath = null;
 
     public FileReceivalState(BufferedReader userIn, PrintStream userOut) {
         this.userIn = Preconditions.checkNotNull(userIn, "userIn");
@@ -31,50 +33,59 @@ public class FileReceivalState implements CommunicationProtocolState {
     }
 
     @Override
-    public void messageReceived(CommunicationProtocol protocol, Message message) throws IOException, BadMessageException {
+    public void messageReceived(CommunicationProtocol protocol, IncomingMessage message) throws IOException, BadMessageException {
         if (lastFileRequested == null) {
             throw new IllegalStateException("Request file first via nextTransmissionMessage");
         }
 
-        if (message.isEqualTo(TEAFileServerProtocolStandard.StandardMessages.FILE_NOT_FOUND_RESPONSE)) {
+        if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_FAILURE) &&
+                message.getContent().equals(TEAFileServerProtocolStandard.SpecialContent.FILE_NOT_FOUND)) {
             userOut.println(String.format("Error: File '%s' Not Found", lastFileRequested));
-        } else if (message.getTypeName().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)) {
-            if (message.getMessageContents().equals(lastFileRequested) && message.getAttachmentStream() != null) {
-                userOut.print("Download path>> ");
-                String downloadPath = userIn.readLine();
-                FileOutputStream fileSaveStream = new FileOutputStream(downloadPath);
-                InputStream attachmentStream = message.getAttachmentStream();
-                downloadAttachment(attachmentStream, fileSaveStream);
-                fileSaveStream.close();
+
+        } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)) {
+
+            if (message.getContent().equals(lastFileRequested)) {
+                downloadAttachment(((IncomingResponseMessage) message).getAttachmentStream());
                 userOut.println("File downloaded at " + downloadPath);
             } else {
-                throw new BadMessageException(message.serializeMessage());
+                logger.log(Level.SEVERE, "Incorrect file received: " + message.getContent());
+                throw new BadMessageException("Incorrect file received: " + message.getContent());
             }
+
         } else {
-            throw new BadMessageException(message.serializeMessage());
+            throw new BadMessageException("Unknown message type: " + message.getType());
         }
+
         lastFileRequested = null;
     }
 
-    private void downloadAttachment(InputStream attachmentStream, OutputStream fileSaveStream) throws IOException {
+    private void downloadAttachment(InputStream attachmentStream) throws IOException {
+        FileOutputStream fileSaveStream = new FileOutputStream(downloadPath);
         int count;
         byte[] buffer = new byte[8192];
         while ((count = attachmentStream.read(buffer)) > 0) {
             fileSaveStream.write(buffer, 0, count);
+            if (count < 8192) {
+                break;
+            }
         }
         fileSaveStream.flush();
+        fileSaveStream.close();
     }
 
     @Override
-    public Message nextTransmissionMessage(CommunicationProtocol protocol) {
+    public OutgoingMessage nextTransmissionMessage(CommunicationProtocol protocol) {
         if (first) {
             first = false;
             userOut.println("Connection made. Press CTRL + C to terminate: ");
         }
         userOut.print("Filename>> ");
+
         try {
             lastFileRequested = userIn.readLine();
-            return TEAFileServerProtocolStandard.StandardMessages.fileRequest(lastFileRequested);
+            userOut.print("Download path>> ");
+            downloadPath = userIn.readLine();
+            return new OutgoingRequestMessage(TEAFileServerProtocolStandard.TypeNames.FILE_REQUEST, lastFileRequested);
         } catch (IOException e) {
             // TODO: Fix this
             logger.log(Level.SEVERE, e.toString(), e);

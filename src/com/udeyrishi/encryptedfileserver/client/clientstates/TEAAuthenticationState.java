@@ -3,7 +3,9 @@ package com.udeyrishi.encryptedfileserver.client.clientstates;
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolState;
-import com.udeyrishi.encryptedfileserver.common.communication.Message;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingRequestMessage;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
@@ -23,19 +25,21 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
     }
 
     @Override
-    public void messageReceived(CommunicationProtocol protocol, Message message) throws IOException, BadMessageException {
-        if (message.isEqualTo(TEAFileServerProtocolStandard.StandardMessages.ACCESS_GRANTED)) {
+    public void messageReceived(CommunicationProtocol protocol, IncomingMessage message) throws IOException, BadMessageException {
+        if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE) &&
+                message.getContent().equals(TEAFileServerProtocolStandard.SpecialContent.ACCESS_GRANTED)) {
             protocol.setState(nextState);
-        } else if (message.isEqualTo(TEAFileServerProtocolStandard.StandardMessages.ACCESS_DENIED)) {
+        } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE) &&
+                message.getContent().equals(TEAFileServerProtocolStandard.SpecialContent.ACCESS_DENIED)) {
             throw new AccessDeniedException("Invalid authentication userID-key combination");
         } else {
-            throw new BadMessageException(message.serializeMessage());
+            throw new BadMessageException("Unknown message: " + message.getType() + ", " + message.getContent());
         }
     }
 
     @Override
-    public Message nextTransmissionMessage(CommunicationProtocol protocol) {
-        return TEAFileServerProtocolStandard.StandardMessages.authenticationRequest(userID);
+    public OutgoingMessage nextTransmissionMessage(CommunicationProtocol protocol) {
+        return new OutgoingRequestMessage(TEAFileServerProtocolStandard.TypeNames.AUTH_REQUEST, userID);
     }
 
     @Override

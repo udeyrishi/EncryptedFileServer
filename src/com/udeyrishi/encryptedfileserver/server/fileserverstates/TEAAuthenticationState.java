@@ -3,7 +3,9 @@ package com.udeyrishi.encryptedfileserver.server.fileserverstates;
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolState;
-import com.udeyrishi.encryptedfileserver.common.communication.Message;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingResponseMessage;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
@@ -27,15 +29,15 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
     }
 
     @Override
-    public void messageReceived(CommunicationProtocol protocol, Message message) throws IOException, BadMessageException {
+    public void messageReceived(CommunicationProtocol protocol, IncomingMessage message) throws IOException, BadMessageException {
         // reset
         matchedKey = null;
         for (Map.Entry<String, TEAKey> key : authenticationKeys.entrySet()) {
-            TEAMessageFilter filter = new TEAMessageFilter(key.getValue());
-            Message decryptedMessage = filter.incomingMessageFilter(message);
 
-            Message expectedAuthMessage = TEAFileServerProtocolStandard.StandardMessages.authenticationRequest(key.getKey());
-            if (decryptedMessage.isEqualTo(expectedAuthMessage)) {
+            TEAMessageFilter filter = new TEAMessageFilter(key.getValue());
+            IncomingMessage decryptedMessage = filter.filter(message);
+            if (decryptedMessage.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_REQUEST) &&
+                    decryptedMessage.getContent().equals(key.getKey())) {
                 matchedKey = key.getValue();
                 break;
             }
@@ -43,16 +45,20 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
     }
 
     @Override
-    public Message nextTransmissionMessage(CommunicationProtocol protocol) {
+    public OutgoingMessage nextTransmissionMessage(CommunicationProtocol protocol) {
         if (matchedKey == null) {
-            return TEAFileServerProtocolStandard.StandardMessages.ACCESS_DENIED;
+            return new OutgoingResponseMessage(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE,
+                    TEAFileServerProtocolStandard.SpecialContent.ACCESS_DENIED);
         } else {
             TEAMessageFilter encryptionFilter = new TEAMessageFilter(matchedKey);
-            Message encryptedAccessGrantedMessage
-                    = encryptionFilter.outgoingMessageFilter(TEAFileServerProtocolStandard.StandardMessages.ACCESS_GRANTED);
+
+            OutgoingMessage encryptedAccessGrantedMessage = encryptionFilter.filter(
+                    new OutgoingResponseMessage(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE,
+                            TEAFileServerProtocolStandard.SpecialContent.ACCESS_GRANTED));
 
             // Change to file-transfer state and encrypt all messages from here onwards
-            protocol.setMessageFilter(encryptionFilter);
+            protocol.setIncomingMessageFilter(encryptionFilter);
+            protocol.setOutgoingMessageFilter(encryptionFilter);
             protocol.setState(onAuthState);
             return encryptedAccessGrantedMessage;
         }

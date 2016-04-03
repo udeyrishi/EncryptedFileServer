@@ -1,7 +1,6 @@
-package com.udeyrishi.encryptedfileserver.server.message;
+package com.udeyrishi.encryptedfileserver.common.communication.message;
 
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
-import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
 import com.udeyrishi.encryptedfileserver.common.utils.Pair;
 
 import java.io.IOException;
@@ -43,7 +42,6 @@ public class IncomingRequestMessage extends IncomingMessage {
 
         streamRead = true;
     }
-
 
 
 }

@@ -21,11 +21,11 @@ import java.util.logging.Logger;
  * Created by rishi on 2016-03-28.
  */
 public class Main {
-    private static Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
     private static final String PORT = "port";
     private static final String KEY = "key";
     private static final String HOSTNAME = "host";
     private static final String DEFAULT_HOSTNAME = "localhost";
+    private static final Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
 
     public static void main(String[] args) {
 
@@ -57,12 +57,13 @@ public class Main {
             logger.log(Level.FINER, "Hostname: " + arguments.<String>get(HOSTNAME));
             logger.log(Level.FINER, "Server port: " + arguments.<Integer>get(PORT).toString());
 
+            TEAMessageFilter encryptionFiler = new TEAMessageFilter(teaKey);
             CommunicationProtocolClient client = new CommunicationProtocolClient(
                     arguments.<String>get(HOSTNAME),
                     arguments.<Integer>get(PORT),
                     new CommunicationProtocol(new TEAAuthenticationState(userID,
                             new FileReceivalState(new BufferedReader(new InputStreamReader(System.in)), System.out)),
-                                              new TEAMessageFilter(teaKey)));
+                            encryptionFiler, encryptionFiler));
 
             client.run();
 

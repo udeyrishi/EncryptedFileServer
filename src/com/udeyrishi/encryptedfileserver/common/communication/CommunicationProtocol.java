@@ -1,5 +1,9 @@
 package com.udeyrishi.encryptedfileserver.common.communication;
 
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 
 import java.io.IOException;
@@ -12,12 +16,12 @@ import java.util.logging.Logger;
 public class CommunicationProtocol {
     public static final CommunicationProtocolState TERMINATED_STATE = new CommunicationProtocolState() {
         @Override
-        public void messageReceived(CommunicationProtocol protocol, Message message) throws IllegalStateException {
+        public void messageReceived(CommunicationProtocol protocol, IncomingMessage message) throws IllegalStateException {
             throw new IllegalStateException("Can't receive messages when protocol is terminated.");
         }
 
         @Override
-        public Message nextTransmissionMessage(CommunicationProtocol protocol) {
+        public OutgoingMessage nextTransmissionMessage(CommunicationProtocol protocol) {
             throw new IllegalStateException("Can't transmit messages when protocol is terminated.");
         }
 
@@ -28,15 +32,18 @@ public class CommunicationProtocol {
     };
     private static Logger logger = LoggerFactory.createConsoleLogger(CommunicationProtocol.class.getName());
     private CommunicationProtocolState state;
-    private MessageFilter filter;
+    private IncomingMessageFilter incomingMessageFilter;
+    private OutgoingMessageFilter outgoingMessageFilter;
 
-    public CommunicationProtocol(CommunicationProtocolState initialState, MessageFilter filter) {
+    public CommunicationProtocol(CommunicationProtocolState initialState, IncomingMessageFilter incomingMessageFilter,
+                                 OutgoingMessageFilter outgoingMessageFilter) {
         setState(initialState);
-        setMessageFilter(filter);
+        setIncomingMessageFilter(incomingMessageFilter);
+        setOutgoingMessageFilter(outgoingMessageFilter);
     }
 
     public CommunicationProtocol(CommunicationProtocolState initialState) {
-        this(initialState, null);
+        this(initialState, null, null);
     }
 
     public void setState(CommunicationProtocolState state) {
@@ -44,21 +51,28 @@ public class CommunicationProtocol {
         logger.log(Level.FINER, "Communication protocol's state changed to: " + state.getClass().getName());
     }
 
-    public void setMessageFilter(MessageFilter filter) {
-        this.filter = filter;
-        logger.log(Level.FINER, String.format("Filter %s attached to communication protocol",
+    public void setIncomingMessageFilter(IncomingMessageFilter filter) {
+        this.incomingMessageFilter = filter;
+        logger.log(Level.FINER, String.format("Incoming Filter %s attached to communication protocol",
                 filter == null ? "null" : filter.getClass().getName()));
     }
 
-    public void processReceivedMessage(Message message) throws IllegalStateException, IOException, BadMessageException {
-        message = filter == null ? message : filter.incomingMessageFilter(message);
+    public void setOutgoingMessageFilter(OutgoingMessageFilter filter) {
+        this.outgoingMessageFilter = filter;
+        logger.log(Level.FINER, String.format("Outgoing Filter %s attached to communication protocol",
+                filter == null ? "null" : filter.getClass().getName()));
+    }
+
+    public void processReceivedMessage(IncomingMessage message)
+            throws IllegalStateException, IOException, BadMessageException {
+        message = incomingMessageFilter == null ? message : incomingMessageFilter.filter(message);
         logger.log(Level.FINEST, "Message received");
         state.messageReceived(this, message);
     }
 
-    public Message getNextTransmissionMessage() throws IllegalStateException {
-        Message message = state.nextTransmissionMessage(this);
-        message = filter == null ? message : filter.outgoingMessageFilter(message);
+    public OutgoingMessage getNextTransmissionMessage() throws IllegalStateException {
+        OutgoingMessage message = state.nextTransmissionMessage(this);
+        message = incomingMessageFilter == null ? message : outgoingMessageFilter.filter(message);
         logger.log(Level.FINEST, "Message transmitted");
         return message;
     }

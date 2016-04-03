@@ -24,27 +24,6 @@ public abstract class IncomingMessage {
         this.stream = Preconditions.checkNotNull(stream, "stream");
     }
 
-    public abstract String getType() throws IOException, BadMessageException;
-    public abstract String getContent() throws IOException, BadMessageException;
-
-    protected byte[] readFromStream() throws IOException {
-        ByteArrayOutputStream packet = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        while (true) {
-            int n = stream.read(buffer);
-            if (n < 0) {
-                break;
-            }
-            packet.write(buffer, 0, n);
-        }
-
-        if (packet.size() == 0) {
-            throw new StreamCorruptedException("Expected data on the stream, but nothing received.");
-        }
-        return packet.toByteArray();
-
-    }
-
     protected static Pair<String, String> parseMessage(String message) throws BadMessageException {
         String type;
         String content;
@@ -65,6 +44,31 @@ public abstract class IncomingMessage {
         }
 
         return new Pair<>(type, content);
+    }
+
+    public abstract String getType() throws IOException, BadMessageException;
+
+    public abstract String getContent() throws IOException, BadMessageException;
+
+    protected byte[] readFromStream() throws IOException {
+        ByteArrayOutputStream packet = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        while (true) {
+            int n = stream.read(buffer);
+            if (n < 0) {
+                break;
+            }
+            packet.write(buffer, 0, n);
+            if (buffer[n - 1] == (byte) '\n') {
+                break;
+            }
+        }
+
+        if (packet.size() == 0) {
+            throw new StreamCorruptedException("Expected data on the stream, but nothing received.");
+        }
+        return packet.toByteArray();
+
     }
 
 }

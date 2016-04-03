@@ -1,7 +1,6 @@
-package com.udeyrishi.encryptedfileserver.client.message;
+package com.udeyrishi.encryptedfileserver.common.communication.message;
 
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
-import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
 import com.udeyrishi.encryptedfileserver.common.utils.Pair;
 
 import java.io.ByteArrayOutputStream;
@@ -53,11 +52,11 @@ public class IncomingResponseMessage extends IncomingMessage {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         while (true) {
-            byte lastByte = (byte)stream.read();
+            byte lastByte = (byte) stream.read();
 
-            if (lastByte == (byte)-1) {
+            if (lastByte == (byte) -1) {
                 break;
-            } else if (lastByte == (byte)'\n') {
+            } else if (lastByte == (byte) '\n') {
                 byteArrayOutputStream.write(lastByte);
                 break;
             } else {

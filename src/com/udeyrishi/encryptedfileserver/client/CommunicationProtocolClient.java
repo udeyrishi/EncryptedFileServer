@@ -2,12 +2,15 @@ package com.udeyrishi.encryptedfileserver.client;
 
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
-import com.udeyrishi.encryptedfileserver.common.communication.Message;
-import com.udeyrishi.encryptedfileserver.common.communication.MessageBuilder;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingResponseMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
+import com.udeyrishi.encryptedfileserver.common.utils.StreamUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,19 +34,19 @@ class CommunicationProtocolClient implements Runnable {
     @Override
     public void run() {
         try (Socket socket = new Socket(hostname, port);
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-             InputStream attachmentIn = socket.getInputStream();
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
+             OutputStream out = socket.getOutputStream();
+             InputStream in = socket.getInputStream()) {
             while (true) {
-                Message requestMessage = protocol.getNextTransmissionMessage();
+                OutgoingMessage requestMessage = protocol.getNextTransmissionMessage();
                 if (protocol.isTerminated()) {
                     break;
                 }
-                out.println(requestMessage.serializeMessage());
 
-                Message received = MessageBuilder.requestMessage().addTypeAndContent(in).addAttachmentStream(attachmentIn)
-                        .autoCloseReader(false).build();
+                InputStream requestMessageStream = requestMessage.getStream();
+                StreamUtils.copyOverStreams(out, requestMessageStream);
+                requestMessageStream.close();
+
+                IncomingResponseMessage received = new IncomingResponseMessage(in);
                 protocol.processReceivedMessage(received);
                 if (protocol.isTerminated()) {
                     break;

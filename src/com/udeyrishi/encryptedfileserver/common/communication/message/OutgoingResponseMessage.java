@@ -1,6 +1,4 @@
-package com.udeyrishi.encryptedfileserver.server.message;
-
-import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
+package com.udeyrishi.encryptedfileserver.common.communication.message;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +33,14 @@ public class OutgoingResponseMessage extends OutgoingMessage {
                     return -1;
                 } else {
                     return attachmentStream.read();
+                }
+            }
+
+            @Override
+            public void close() throws IOException {
+                super.close();
+                if (attachmentStream != null) {
+                    attachmentStream.close();
                 }
             }
         };
