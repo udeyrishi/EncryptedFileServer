@@ -25,9 +25,7 @@ public class TEAMessageFilter implements IncomingMessageFilter, OutgoingMessageF
         return new FilteredSocketInputStream(inputStream, new FilteredSocketInputStream.FilterBufferAction() {
             @Override
             public void bufferAction(byte[] buffer) {
-                System.out.println("Calling decrypt");
                 nativeLib.decrypt(buffer, key.getAsLongArray());
-                System.out.println("Called decrypt");
             }
         }, Long.SIZE*2/Byte.SIZE);
     }
@@ -37,9 +35,7 @@ public class TEAMessageFilter implements IncomingMessageFilter, OutgoingMessageF
         return new FilteredSocketInputStream(inputStream, new FilteredSocketInputStream.FilterBufferAction() {
             @Override
             public void bufferAction(byte[] buffer) {
-                System.out.println("Calling encrypt");
                 nativeLib.encrypt(buffer, key.getAsLongArray());
-                System.out.println("Called encrypt");
             }
         }, Long.SIZE*2/Byte.SIZE);
 

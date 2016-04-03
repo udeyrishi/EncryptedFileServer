@@ -11,43 +11,59 @@ import java.io.InputStream;
 public class FilteredSocketInputStream extends InputStream {
     private final InputStream inputStream;
     private final FilterBufferAction action;
-    private final byte[] buffer;
+    private final int bufferActionBufferSize;
 
     // Need this because SocketInputStream is not public... Can't extend it
-    public FilteredSocketInputStream(InputStream inputStream, FilterBufferAction action, int bufferSize) {
+    public FilteredSocketInputStream(InputStream inputStream, FilterBufferAction action, int bufferActionBufferSize) {
         this.inputStream = Preconditions.checkNotNull(inputStream, "inputStream");
         this.action = Preconditions.checkNotNull(action, "action");
-        this.buffer = new byte[bufferSize];
+        this.bufferActionBufferSize = bufferActionBufferSize;
     }
-
-    private int i = 0;
-    private int readCount = Integer.MAX_VALUE;
 
     @Override
     public int read() throws IOException {
-        i %= readCount;
-
-        if (i == 0) {
-            readCount = inputStream.read(buffer);
-            if (readCount > 0) {
-                action.bufferAction(buffer);
-                return buffer[i++];
-            } else {
-                return -1;
-            }
-        } else {
-            return buffer[i++];
+        byte[] temp = new byte[1];
+        int n = this.read(temp, 0, 1);
+        if (n <= 0) {
+            return -1;
         }
+        return temp[0] & 0xff;
     }
 
     @Override
     public int read(byte b[]) throws IOException {
-        return inputStream.read(b);
+        return this.read(b, 0, b.length);
     }
 
     @Override
     public int read(byte b[], int off, int len) throws IOException {
-        return inputStream.read(b, off, len);
+        byte[] actionBuffer = new byte[bufferActionBufferSize];
+        int count = inputStream.read(b, off, len);
+
+        if (count < bufferActionBufferSize) {
+            for (int i = 0; i < count; ++i) {
+                actionBuffer[i] = b[i + off];
+            }
+            action.bufferAction(actionBuffer);
+            for (int i = 0; i < count; ++i) {
+                b[i + off] = actionBuffer[i];
+            }
+
+        } else {
+            int processed = 0;
+            while (processed < count) {
+                for (int i = 0; i < bufferActionBufferSize; ++i) {
+                    actionBuffer[i] = b[i + off + processed];
+                }
+                action.bufferAction(actionBuffer);
+                for (int i = 0; i < bufferActionBufferSize; ++i) {
+                    b[i + off + processed] = actionBuffer[i];
+                }
+                processed += bufferActionBufferSize;
+            }
+        }
+
+        return count;
     }
 
     @Override
