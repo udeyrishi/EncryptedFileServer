@@ -11,6 +11,7 @@ import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -49,6 +50,7 @@ public class FileTransferState implements CommunicationProtocolState {
 
         OutgoingResponseMessage response;
         try {
+            validateFile();
             InputStream attachmentStream = Files.newInputStream(Paths.get(root, lastFileRequested));
             response = new OutgoingResponseMessage(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS,
                     lastFileRequested,
@@ -59,6 +61,15 @@ public class FileTransferState implements CommunicationProtocolState {
         }
         lastFileRequested = null;
         return response;
+    }
+
+    private void validateFile() throws AccessDeniedException {
+        String serverRoot = Paths.get(root).toAbsolutePath().toString();
+        String requestedFile = Paths.get(root, lastFileRequested).normalize().toAbsolutePath().toString();
+        if (!requestedFile.contains(serverRoot)) {
+            // Caught ya!
+            throw new AccessDeniedException("Can't get files outside of the server root!");
+        }
     }
 
     @Override
