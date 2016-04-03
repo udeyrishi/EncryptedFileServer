@@ -35,9 +35,9 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
         for (Map.Entry<String, TEAKey> key : authenticationKeys.entrySet()) {
 
             TEAMessageFilter filter = new TEAMessageFilter(key.getValue());
-            IncomingMessage decryptedMessage = filter.filter(message);
-            if (decryptedMessage.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_REQUEST) &&
-                    decryptedMessage.getContent().equals(key.getKey())) {
+            message.setFilter(filter);
+            if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_REQUEST) &&
+                    message.getContent().equals(key.getKey())) {
                 matchedKey = key.getValue();
                 break;
             }
@@ -52,15 +52,17 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
         } else {
             TEAMessageFilter encryptionFilter = new TEAMessageFilter(matchedKey);
 
-            OutgoingMessage encryptedAccessGrantedMessage = encryptionFilter.filter(
-                    new OutgoingResponseMessage(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE,
-                            TEAFileServerProtocolStandard.SpecialContent.ACCESS_GRANTED));
+            OutgoingMessage accessGrantedMessage
+                    = new OutgoingResponseMessage(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE,
+                    TEAFileServerProtocolStandard.SpecialContent.ACCESS_GRANTED);
+
+            accessGrantedMessage.setFilter(encryptionFilter);
 
             // Change to file-transfer state and encrypt all messages from here onwards
             protocol.setIncomingMessageFilter(encryptionFilter);
             protocol.setOutgoingMessageFilter(encryptionFilter);
             protocol.setState(onAuthState);
-            return encryptedAccessGrantedMessage;
+            return accessGrantedMessage;
         }
     }
 

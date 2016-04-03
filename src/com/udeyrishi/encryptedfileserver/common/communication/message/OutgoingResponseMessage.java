@@ -19,7 +19,7 @@ public class OutgoingResponseMessage extends OutgoingMessage {
     }
 
     @Override
-    public InputStream getStream() {
+    protected InputStream getRawStream() {
         final byte[] firstLine = serializedMessage(getType(), getContent()).getBytes();
 
         return new InputStream() {

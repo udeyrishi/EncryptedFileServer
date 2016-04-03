@@ -13,6 +13,7 @@ public abstract class OutgoingMessage {
 
     private final String type;
     private final String content;
+    private OutgoingMessageFilter filter = null;
 
     public OutgoingMessage(String type, String content) {
         this.type = Preconditions.checkNotNull(type, "type");
@@ -35,5 +36,17 @@ public abstract class OutgoingMessage {
         return content;
     }
 
-    public abstract InputStream getStream();
+    public final InputStream getStream() {
+        if (filter == null) {
+            return getRawStream();
+        } else {
+            return filter.filterOutgoingMessage(getRawStream());
+        }
+    }
+
+    protected abstract InputStream getRawStream();
+
+    public void setFilter(OutgoingMessageFilter filter) {
+        this.filter = filter;
+    }
 }

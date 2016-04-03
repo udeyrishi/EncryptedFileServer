@@ -65,14 +65,14 @@ public class CommunicationProtocol {
 
     public void processReceivedMessage(IncomingMessage message)
             throws IllegalStateException, IOException, BadMessageException {
-        message = incomingMessageFilter == null ? message : incomingMessageFilter.filter(message);
+        message.setFilter(incomingMessageFilter);
         logger.log(Level.FINEST, "Message received");
         state.messageReceived(this, message);
     }
 
     public OutgoingMessage getNextTransmissionMessage() throws IllegalStateException {
         OutgoingMessage message = state.nextTransmissionMessage(this);
-        message = incomingMessageFilter == null ? message : outgoingMessageFilter.filter(message);
+        message.setFilter(outgoingMessageFilter);
         logger.log(Level.FINEST, "Message transmitted");
         return message;
     }

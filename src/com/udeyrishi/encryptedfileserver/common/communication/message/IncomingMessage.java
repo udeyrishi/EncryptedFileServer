@@ -20,6 +20,8 @@ public abstract class IncomingMessage {
 
     protected final InputStream stream;
 
+    private IncomingMessageFilter messageFilter = null;
+
     public IncomingMessage(InputStream stream) {
         this.stream = Preconditions.checkNotNull(stream, "stream");
     }
@@ -52,11 +54,20 @@ public abstract class IncomingMessage {
 
     public abstract InputStream getAttachmentStream() throws IOException, BadMessageException;
 
+    public void setFilter(IncomingMessageFilter filter) {
+        this.messageFilter = filter;
+    }
+
     protected byte[] readFromStream() throws IOException {
         ByteArrayOutputStream packet = new ByteArrayOutputStream();
+        InputStream filteredStream = stream;
+        if (messageFilter != null) {
+            filteredStream = messageFilter.filterIncomingMessage(stream);
+        }
+
         byte[] buffer = new byte[4096];
         while (true) {
-            int n = stream.read(buffer);
+            int n = filteredStream.read(buffer);
             if (n < 0) {
                 break;
             }

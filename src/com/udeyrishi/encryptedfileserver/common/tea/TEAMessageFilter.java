@@ -6,6 +6,8 @@ import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMe
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
+import java.io.InputStream;
+
 /**
  * Created by rishi on 2016-03-30.
  */
@@ -20,12 +22,12 @@ public class TEAMessageFilter implements IncomingMessageFilter, OutgoingMessageF
 
 
     @Override
-    public IncomingMessage filter(IncomingMessage message) {
-        return message;
+    public InputStream filterIncomingMessage(InputStream inputStream) {
+        return inputStream;
     }
 
     @Override
-    public OutgoingMessage filter(OutgoingMessage message) {
-        return message;
+    public InputStream filterOutgoingMessage(InputStream inputStream) {
+        return inputStream;
     }
 }

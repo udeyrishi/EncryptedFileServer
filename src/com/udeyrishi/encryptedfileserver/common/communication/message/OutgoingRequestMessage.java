@@ -13,7 +13,7 @@ public class OutgoingRequestMessage extends OutgoingMessage {
     }
 
     @Override
-    public InputStream getStream() {
+    protected InputStream getRawStream() {
         final byte[] requestMessage = serializedMessage(getType(), getContent()).getBytes();
 
         return new InputStream() {
