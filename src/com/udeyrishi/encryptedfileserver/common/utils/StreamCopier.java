@@ -12,34 +12,32 @@ public class StreamCopier implements Runnable {
     private final InputStream in;
     private final OutputStream out;
     private final boolean terminateIfThreadInterrupted;
+    private final long maxSize;
 
-    public StreamCopier(OutputStream out, InputStream in) {
+    public StreamCopier(OutputStream out, InputStream in, long maxSize) {
         this.out = Preconditions.checkNotNull(out, "out");
         this.in = Preconditions.checkNotNull(in, "in");
         this.terminateIfThreadInterrupted = false;
+        this.maxSize = maxSize;
     }
 
-    public StreamCopier(OutputStream out, InputStream in, boolean terminateIfThreadInterrupted) {
+    public StreamCopier(OutputStream out, InputStream in, long maxSize, boolean terminateIfThreadInterrupted) {
         this.out = Preconditions.checkNotNull(out, "out");
         this.in = Preconditions.checkNotNull(in, "in");
         this.terminateIfThreadInterrupted = terminateIfThreadInterrupted;
+        this.maxSize = maxSize;
     }
 
     @Override
     public void run() {
-        Preconditions.checkNotNull(out, "out");
-        Preconditions.checkNotNull(in, "in");
-
         int count;
-        byte[] buffer = new byte[BUFFER_SIZE];
+        byte[] buffer = new byte[(int)Math.min(BUFFER_SIZE, maxSize)];
 
         try {
-            while (!isInterrupted() && (count = in.read(buffer)) > 0) {
+            int done = 0;
+            while (done < maxSize && !isInterrupted() && (count = in.read(buffer)) > 0) {
                 out.write(buffer, 0, count);
-                if (count < BUFFER_SIZE) {
-                    // Some InputStreams could be blocking
-                    break;
-                }
+                done += count;
             }
             out.flush();
         } catch (IOException e) {

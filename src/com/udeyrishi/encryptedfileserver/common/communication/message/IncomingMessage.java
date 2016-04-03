@@ -54,6 +54,8 @@ public abstract class IncomingMessage {
 
     public abstract InputStream getAttachmentStream() throws IOException, BadMessageException;
 
+    public abstract long getAttachmentSize() throws IOException, BadMessageException;
+
     public void setFilter(IncomingMessageFilter filter) {
         this.messageFilter = filter;
     }
@@ -83,5 +85,4 @@ public abstract class IncomingMessage {
         return packet.toByteArray();
 
     }
-
 }

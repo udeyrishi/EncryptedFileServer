@@ -4,7 +4,6 @@ import com.udeyrishi.encryptedfileserver.common.communication.BadMessageExceptio
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolState;
 import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
-import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingResponseMessage;
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingRequestMessage;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
@@ -48,7 +47,7 @@ public class FileReceivalState implements CommunicationProtocolState {
             userOut.println(String.format("Error: File '%s' not found on the server", lastFileRequested));
         } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)) {
             if (message.getContent().equals(lastFileRequested)) {
-                downloadAttachment(message.getAttachmentStream());
+                downloadAttachment(message.getAttachmentStream(), message.getAttachmentSize());
             } else {
                 logger.log(Level.SEVERE, "Incorrect file received: " + message.getContent());
                 throw new BadMessageException("Incorrect file received: " + message.getContent());
@@ -60,9 +59,9 @@ public class FileReceivalState implements CommunicationProtocolState {
         lastFileRequested = null;
     }
 
-    private void downloadAttachment(InputStream attachmentStream) throws IOException {
+    private void downloadAttachment(InputStream attachmentStream, long fileSize) throws IOException {
         try (FileOutputStream fileSaveStream = new FileOutputStream(downloadPath)) {
-            downloader = new Thread(new StreamCopier(fileSaveStream, attachmentStream, true));
+            downloader = new Thread(new StreamCopier(fileSaveStream, attachmentStream, fileSize, true));
             downloader.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {

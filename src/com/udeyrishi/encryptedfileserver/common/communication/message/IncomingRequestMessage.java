@@ -36,6 +36,11 @@ public class IncomingRequestMessage extends IncomingMessage {
         throw new UnsupportedOperationException("Request messages can't contain attachments.");
     }
 
+    @Override
+    public long getAttachmentSize() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Request messages can't contain attachments.");
+    }
+
     private void readMessage() throws IOException, BadMessageException {
         if (streamRead) {
             return;

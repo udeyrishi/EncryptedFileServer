@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -51,10 +52,11 @@ public class FileTransferState implements CommunicationProtocolState {
         OutgoingResponseMessage response;
         try {
             validateFile();
-            InputStream attachmentStream = Files.newInputStream(Paths.get(root, lastFileRequested));
+            Path path = Paths.get(root, lastFileRequested);
+            InputStream attachmentStream = Files.newInputStream(path);
             response = new OutgoingResponseMessage(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS,
                     lastFileRequested,
-                    attachmentStream);
+                    attachmentStream, path.toFile().length());
         } catch (IOException e) {
             response = new OutgoingResponseMessage(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_FAILURE,
                     TEAFileServerProtocolStandard.SpecialContent.FILE_NOT_FOUND);
@@ -64,7 +66,7 @@ public class FileTransferState implements CommunicationProtocolState {
     }
 
     private void validateFile() throws AccessDeniedException {
-        String serverRoot = Paths.get(root).toAbsolutePath().toString();
+        String serverRoot = Paths.get(root).normalize().toAbsolutePath().toString();
         String requestedFile = Paths.get(root, lastFileRequested).normalize().toAbsolutePath().toString();
         if (!requestedFile.contains(serverRoot)) {
             // Caught ya!
