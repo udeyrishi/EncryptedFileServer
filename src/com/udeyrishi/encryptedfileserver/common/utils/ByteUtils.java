@@ -20,4 +20,10 @@ public class ByteUtils {
         buffer.flip();//need flip
         return buffer.getLong();
     }
+
+    public static void copyBuffer(byte[] dest, byte[] source, int offsetDest, int offsetSource, int length) {
+        for (int i = 0; i < length; ++i) {
+            dest[offsetDest + i] = source[offsetSource + i];
+        }
+    }
 }

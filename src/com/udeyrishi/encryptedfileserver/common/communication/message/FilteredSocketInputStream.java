@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.common.communication.message;
 
+import com.udeyrishi.encryptedfileserver.common.utils.ByteUtils;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.IOException;
@@ -40,27 +41,13 @@ public class FilteredSocketInputStream extends InputStream {
         byte[] actionBuffer = new byte[bufferActionBufferSize];
         int count = inputStream.read(b, off, len);
 
-        if (count < bufferActionBufferSize) {
-            for (int i = 0; i < count; ++i) {
-                actionBuffer[i] = b[i + off];
-            }
+        int processed = 0;
+        while (processed < count) {
+            int batchSize = Math.min(count, bufferActionBufferSize);
+            ByteUtils.copyBuffer(actionBuffer, b, 0, off, batchSize);
             action.bufferAction(actionBuffer);
-            for (int i = 0; i < count; ++i) {
-                b[i + off] = actionBuffer[i];
-            }
-
-        } else {
-            int processed = 0;
-            while (processed < count) {
-                for (int i = 0; i < bufferActionBufferSize; ++i) {
-                    actionBuffer[i] = b[i + off + processed];
-                }
-                action.bufferAction(actionBuffer);
-                for (int i = 0; i < bufferActionBufferSize; ++i) {
-                    b[i + off + processed] = actionBuffer[i];
-                }
-                processed += bufferActionBufferSize;
-            }
+            ByteUtils.copyBuffer(b, actionBuffer, off, 0, batchSize);
+            processed += batchSize;
         }
 
         return count;
