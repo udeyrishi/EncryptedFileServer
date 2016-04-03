@@ -5,7 +5,7 @@ import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProto
 import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingRequestMessage;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
-import com.udeyrishi.encryptedfileserver.common.utils.StreamUtils;
+import com.udeyrishi.encryptedfileserver.common.utils.StreamCopier;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +47,7 @@ class ClientHandler implements Runnable {
                 }
 
                 InputStream responseStream = protocol.getNextTransmissionMessage().getStream();
-                StreamUtils.copyOverStreams(out, responseStream);
+                new StreamCopier(out, responseStream).run();
                 responseStream.close();
 
                 logger.log(Level.FINEST, "Tx message sent");

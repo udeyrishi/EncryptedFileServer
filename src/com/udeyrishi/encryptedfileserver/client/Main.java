@@ -58,13 +58,20 @@ public class Main {
             logger.log(Level.FINER, "Server port: " + arguments.<Integer>get(PORT).toString());
 
             TEAMessageFilter encryptionFiler = new TEAMessageFilter(teaKey);
+            final CommunicationProtocol protocol = new CommunicationProtocol(new TEAAuthenticationState(userID,
+                    new FileReceivalState(new BufferedReader(new InputStreamReader(System.in)), System.out)),
+                    encryptionFiler, encryptionFiler);
             CommunicationProtocolClient client = new CommunicationProtocolClient(
                     arguments.<String>get(HOSTNAME),
                     arguments.<Integer>get(PORT),
-                    new CommunicationProtocol(new TEAAuthenticationState(userID,
-                            new FileReceivalState(new BufferedReader(new InputStreamReader(System.in)), System.out)),
-                            encryptionFiler, encryptionFiler));
+                    protocol);
 
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    protocol.interrupt();
+                }
+            });
             client.run();
 
         } catch (IOException | BadTEAKeysFileException e) {

@@ -10,6 +10,7 @@ import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingRe
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
+import com.udeyrishi.encryptedfileserver.common.utils.StreamCopier;
 
 import java.io.*;
 import java.util.logging.Level;
@@ -23,9 +24,10 @@ public class FileReceivalState implements CommunicationProtocolState {
 
     private final PrintStream userOut;
     private final BufferedReader userIn;
-    private boolean first = true;
+    private Thread downloader = null;
     private String lastFileRequested = null;
     private String downloadPath = null;
+    private boolean interrupted = false;
 
     public FileReceivalState(BufferedReader userIn, PrintStream userOut) {
         this.userIn = Preconditions.checkNotNull(userIn, "userIn");
@@ -38,10 +40,12 @@ public class FileReceivalState implements CommunicationProtocolState {
             throw new IllegalStateException("Request file first via nextTransmissionMessage");
         }
 
-        if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_FAILURE) &&
+        if (interrupted) {
+            protocol.setState(CommunicationProtocol.TERMINATED_STATE);
+            return;
+        } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_FAILURE) &&
                 message.getContent().equals(TEAFileServerProtocolStandard.SpecialContent.FILE_NOT_FOUND)) {
             userOut.println(String.format("Error: File '%s' not found on the server", lastFileRequested));
-
         } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)) {
             if (message.getContent().equals(lastFileRequested)) {
                 downloadAttachment(((IncomingResponseMessage) message).getAttachmentStream());
@@ -49,7 +53,6 @@ public class FileReceivalState implements CommunicationProtocolState {
                 logger.log(Level.SEVERE, "Incorrect file received: " + message.getContent());
                 throw new BadMessageException("Incorrect file received: " + message.getContent());
             }
-
         } else {
             throw new BadMessageException("Unknown message type: " + message.getType());
         }
@@ -59,31 +62,51 @@ public class FileReceivalState implements CommunicationProtocolState {
 
     private void downloadAttachment(InputStream attachmentStream) throws IOException {
         try (FileOutputStream fileSaveStream = new FileOutputStream(downloadPath)) {
-            int count;
-            byte[] buffer = new byte[8192];
-            while ((count = attachmentStream.read(buffer)) > 0) {
-                fileSaveStream.write(buffer, 0, count);
-                if (count < 8192) {
-                    break;
+            downloader = new Thread(new StreamCopier(fileSaveStream, attachmentStream, true));
+            downloader.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    userOut.println("Download failed because of some error: " + e.toString());
                 }
+            });
+            downloader.start();
+            while (downloader.isAlive()) {
+                userOut.print(".");
+                Thread.sleep(5);
             }
-            fileSaveStream.flush();
-            userOut.println("File downloaded at " + downloadPath);
-        } catch (FileNotFoundException e) {
-            userOut.println("Download path doesn't exist: " + downloadPath);
+            if (downloader.isInterrupted()) {
+                userOut.println("\nDownload cancelled.");
+            } else {
+                userOut.println("\nFile downloading finished.");
+            }
+            downloader = null;
+        } catch (InterruptedException e) {
+            userOut.println("\nDownload cancelled.");
         }
     }
 
     @Override
     public OutgoingMessage nextTransmissionMessage(CommunicationProtocol protocol) {
-        if (first) {
-            first = false;
-            userOut.println("Connection made. Press CTRL + C to terminate: ");
-        }
-
         try {
-            lastFileRequested = getNonNullInput("Filename>> ", "Filename can't be empty");
-            downloadPath = getNonNullInput("Download path>>", "Download path can't be empty");
+            if (interrupted) {
+                protocol.setState(CommunicationProtocol.TERMINATED_STATE);
+                return new OutgoingRequestMessage(TEAFileServerProtocolStandard.TypeNames.TERMINATION_REQUEST, null);
+            }
+
+            userOut.print("Filename [ENTER to quit] >> ");
+            lastFileRequested = userIn.readLine();
+
+            if (lastFileRequested.trim().isEmpty() || interrupted) {
+                protocol.setState(CommunicationProtocol.TERMINATED_STATE);
+                return new OutgoingRequestMessage(TEAFileServerProtocolStandard.TypeNames.TERMINATION_REQUEST, null);
+            }
+
+            userOut.print("Download path [ENTER to quit] >> ");
+            downloadPath = userIn.readLine();
+            if (downloadPath.trim().isEmpty() || interrupted) {
+                protocol.setState(CommunicationProtocol.TERMINATED_STATE);
+                return new OutgoingRequestMessage(TEAFileServerProtocolStandard.TypeNames.TERMINATION_REQUEST, null);
+            }
 
             return new OutgoingRequestMessage(TEAFileServerProtocolStandard.TypeNames.FILE_REQUEST, lastFileRequested);
         } catch (IOException e) {
@@ -95,22 +118,9 @@ public class FileReceivalState implements CommunicationProtocolState {
 
     @Override
     public void interrupt(CommunicationProtocol protocol) {
-
-    }
-
-    private String getNonNullInput(String prompt, String errorMessage) throws IOException {
-        String input;
-
-        while (true) {
-            userOut.print(prompt);
-            input = userIn.readLine().trim();
-            if (input.isEmpty()) {
-                userOut.println(errorMessage);
-            } else {
-                break;
-            }
+        this.interrupted = true;
+        if (downloader != null) {
+            downloader.interrupt();
         }
-
-        return input;
     }
 }

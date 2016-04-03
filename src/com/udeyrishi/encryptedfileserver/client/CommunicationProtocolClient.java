@@ -6,7 +6,7 @@ import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingRe
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
-import com.udeyrishi.encryptedfileserver.common.utils.StreamUtils;
+import com.udeyrishi.encryptedfileserver.common.utils.StreamCopier;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,13 +38,13 @@ class CommunicationProtocolClient implements Runnable {
              InputStream in = socket.getInputStream()) {
             while (true) {
                 OutgoingMessage requestMessage = protocol.getNextTransmissionMessage();
+                InputStream requestMessageStream = requestMessage.getStream();
+                new StreamCopier(out, requestMessageStream).run();
+                requestMessageStream.close();
+
                 if (protocol.isTerminated()) {
                     break;
                 }
-
-                InputStream requestMessageStream = requestMessage.getStream();
-                StreamUtils.copyOverStreams(out, requestMessageStream);
-                requestMessageStream.close();
 
                 IncomingResponseMessage received = new IncomingResponseMessage(in);
                 protocol.processReceivedMessage(received);
