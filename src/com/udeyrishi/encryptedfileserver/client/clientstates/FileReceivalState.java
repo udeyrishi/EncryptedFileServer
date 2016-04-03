@@ -48,7 +48,7 @@ public class FileReceivalState implements CommunicationProtocolState {
             userOut.println(String.format("Error: File '%s' not found on the server", lastFileRequested));
         } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)) {
             if (message.getContent().equals(lastFileRequested)) {
-                downloadAttachment(((IncomingResponseMessage) message).getAttachmentStream());
+                downloadAttachment(message.getAttachmentStream());
             } else {
                 logger.log(Level.SEVERE, "Incorrect file received: " + message.getContent());
                 throw new BadMessageException("Incorrect file received: " + message.getContent());

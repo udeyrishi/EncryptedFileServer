@@ -31,6 +31,7 @@ public class IncomingResponseMessage extends IncomingMessage {
         return content;
     }
 
+    @Override
     public InputStream getAttachmentStream() throws IOException, BadMessageException {
         readMessageUntilAttachment();
         return stream;

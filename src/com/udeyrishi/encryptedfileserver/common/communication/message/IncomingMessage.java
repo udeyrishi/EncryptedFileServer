@@ -50,6 +50,8 @@ public abstract class IncomingMessage {
 
     public abstract String getContent() throws IOException, BadMessageException;
 
+    public abstract InputStream getAttachmentStream() throws IOException, BadMessageException;
+
     protected byte[] readFromStream() throws IOException {
         ByteArrayOutputStream packet = new ByteArrayOutputStream();
         byte[] buffer = new byte[4096];
