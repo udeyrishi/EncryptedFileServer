@@ -80,18 +80,15 @@ public class FileReceivalState implements CommunicationProtocolState {
             first = false;
             userOut.println("Connection made. Press CTRL + C to terminate: ");
         }
-        userOut.print("Filename>> ");
 
         try {
-            lastFileRequested = userIn.readLine();
-            userOut.print("Download path>> ");
-            downloadPath = userIn.readLine();
+            lastFileRequested = getNonNullInput("Filename>> ", "Filename can't be empty");
+            downloadPath = getNonNullInput("Download path>>", "Download path can't be empty");
 
             return new OutgoingRequestMessage(TEAFileServerProtocolStandard.TypeNames.FILE_REQUEST, lastFileRequested);
         } catch (IOException e) {
-            // TODO: Fix this
+            // Somehow failed to do I/O over userIn or userOut. No good way to handle this
             logger.log(Level.SEVERE, e.toString(), e);
-//            interrupt(protocol);
             throw new RuntimeException(e);
         }
     }
@@ -99,5 +96,21 @@ public class FileReceivalState implements CommunicationProtocolState {
     @Override
     public void interrupt(CommunicationProtocol protocol) {
 
+    }
+
+    private String getNonNullInput(String prompt, String errorMessage) throws IOException {
+        String input;
+
+        while (true) {
+            userOut.print(prompt);
+            input = userIn.readLine().trim();
+            if (input.isEmpty()) {
+                userOut.println(errorMessage);
+            } else {
+                break;
+            }
+        }
+
+        return input;
     }
 }
