@@ -2,7 +2,7 @@ package com.udeyrishi.encryptedfileserver.server;
 
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolFactory;
-import com.udeyrishi.encryptedfileserver.common.communication.message.filters.PKCS5Filter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.PaddingFilter;
 import com.udeyrishi.encryptedfileserver.common.tea.BadTEAKeysFileException;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKeyReader;
@@ -48,11 +48,11 @@ public class Main {
                 @Override
                 public CommunicationProtocol createProtocolInstance() {
                     FileTransferState onAuthState = new FileTransferState(arguments.<String>get(FILE_SERVER_ROOT));
-                    final PKCS5Filter pkcs5Filter = new PKCS5Filter((byte)(2*Long.SIZE/Byte.SIZE));
+                    final PaddingFilter paddingFilter = new PaddingFilter((byte)(2*Long.SIZE/Byte.SIZE));
 
                     // Sharing keys object is fine, because it's thread-safe (read-only), and only first message requires this
                     return new CommunicationProtocol(new TEAAuthenticationState(authenticationKeys, onAuthState),
-                            pkcs5Filter, pkcs5Filter);
+                            paddingFilter, paddingFilter);
                 }
             };
 

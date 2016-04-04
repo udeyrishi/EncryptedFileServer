@@ -6,11 +6,11 @@ import java.io.InputStream;
 /**
  * Created by rishi on 2016-04-03.
  */
-public class PKCS5Filter implements IncomingMessageFilter, OutgoingMessageFilter {
+public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilter {
 
     private final byte messageSizeMultipleOf;
 
-    public PKCS5Filter(byte messageSizeMultipleOf) {
+    public PaddingFilter(byte messageSizeMultipleOf) {
         this.messageSizeMultipleOf = messageSizeMultipleOf;
         if (messageSizeMultipleOf <= 0) {
             throw new IllegalArgumentException("Message size needs to between 1 and " + Byte.MAX_VALUE);
@@ -32,20 +32,27 @@ public class PKCS5Filter implements IncomingMessageFilter, OutgoingMessageFilter
                 if (start) {
                     start = false;
                     if (readUntilBufferFull(buffer2) != messageSizeMultipleOf) {
-                        throw new RuntimeException("First packet must be full if PKCS5 protocol is being used.");
+                        throw new RuntimeException("First packet must be full.");
                     }
                 }
 
                 count %= messageSizeMultipleOf;
                 if (count == 0) {
                     buffer1 = buffer2;
-                    buffer2 = new byte[messageSizeMultipleOf];
-                    buffer2Count = readUntilBufferFull(buffer2);
+                    if (messageStream.available() == 0) {
+                        buffer2Count = 0;
+                        buffer2 = null;
+                    } else {
+                        buffer2 = new byte[messageSizeMultipleOf];
+                        buffer2Count = readUntilBufferFull(buffer2);
+                    }
                 }
 
                 if (buffer2Count > 0) {
                     // Next buffer still has data. Can't be terminating in buffer 1
                     return buffer1[count++];
+                } else if (buffer1 == null) {
+                    return -1;
                 } else {
                     // This is the last buffer
                     byte padCount = buffer1[buffer1.length - 1];

@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 public abstract class IncomingMessage {
     private static final String REGEX_PATTERN = "\\s*type\\s*:\\s*(.+?)\\s*;\\s*content\\s*:(.+)\n";
 
-    protected final InputStream stream;
+    protected InputStream stream;
 
     private IncomingMessageFilter messageFilter = null;
 

@@ -52,6 +52,12 @@ public class IncomingResponseMessage extends IncomingMessage {
             return;
         }
 
+        InputStream filteredStream = stream;
+        if (getFilter() != null) {
+            filteredStream = getFilter().filterIncomingMessage(stream);
+        }
+        this.stream = filteredStream;
+
         byte[] messageBytes = readStreamUntilNewlineOrEOF();
         Pair<String, String> typeAndContent = parseMessage(new String(messageBytes));
         if (messageBytes[messageBytes.length - 1] == (byte)'\n') {

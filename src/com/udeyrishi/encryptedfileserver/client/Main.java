@@ -5,7 +5,7 @@ import com.udeyrishi.encryptedfileserver.client.clientstates.TEAAuthenticationSt
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.message.filters.CompoundIncomingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.communication.message.filters.CompoundOutgoingMessageFilter;
-import com.udeyrishi.encryptedfileserver.common.communication.message.filters.PKCS5Filter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.PaddingFilter;
 import com.udeyrishi.encryptedfileserver.common.tea.BadTEAKeysFileException;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKeyReader;
@@ -61,7 +61,7 @@ public class Main {
             logger.log(Level.FINER, "Server port: " + arguments.<Integer>get(PORT).toString());
 
             TEAMessageFilter encryptionFiler = new TEAMessageFilter(teaKey);
-            PKCS5Filter paddingFilter = new PKCS5Filter((byte)(2*Long.SIZE/Byte.SIZE));
+            PaddingFilter paddingFilter = new PaddingFilter((byte)(2*Long.SIZE/Byte.SIZE));
 
             final CommunicationProtocol protocol = new CommunicationProtocol(new TEAAuthenticationState(userID,
                     new FileReceivalState(new BufferedReader(new InputStreamReader(System.in)), System.out)),

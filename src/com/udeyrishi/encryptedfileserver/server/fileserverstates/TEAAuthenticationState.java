@@ -45,10 +45,15 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
             } else {
                 message.setFilter(new CompoundIncomingMessageFilter(filter, message.getFilter()));
             }
-            if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_REQUEST) &&
-                    message.getContent().equals(key.getKey())) {
-                matchedKey = key.getValue();
-                break;
+            try {
+                if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_REQUEST) &&
+                        message.getContent().equals(key.getKey())) {
+                    matchedKey = key.getValue();
+                    break;
+                }
+            } catch (BadMessageException e) {
+                // Potentially because of decryption failure
+                continue;
             }
         }
     }
