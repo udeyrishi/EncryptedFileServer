@@ -5,6 +5,7 @@ import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * Created by rishi on 2016-04-03.
@@ -36,19 +37,38 @@ public class FilteredSocketInputStream extends InputStream {
         return this.read(b, 0, b.length);
     }
 
+//    void print(byte a[], int off, int len) {
+//        System.out.print("[");
+//        for (int i = off; i < off + len; ++i) {
+//            System.out.print(a[i]);
+//            System.out.print(", ");
+//        }
+//        System.out.println("]");
+//    }
+
     @Override
     public int read(byte b[], int off, int len) throws IOException {
         byte[] actionBuffer = new byte[bufferActionBufferSize];
         int count = inputStream.read(b, off, len);
 
+//        System.out.println("read from inputStream:");
+//        print(b, off, count);
+
         int processed = 0;
         while (processed < count) {
-            int batchSize = Math.min(count, bufferActionBufferSize);
-            ByteUtils.copyBuffer(actionBuffer, b, 0, off, batchSize);
+            int left = count - processed;
+            int batchSize = Math.min(left, bufferActionBufferSize);
+            ByteUtils.copyBuffer(actionBuffer, b, 0, off + processed, batchSize);
+            ByteUtils.copyBuffer(actionBuffer, new byte[bufferActionBufferSize - batchSize], batchSize, 0,
+                                 bufferActionBufferSize - batchSize);
+
             action.bufferAction(actionBuffer);
-            ByteUtils.copyBuffer(b, actionBuffer, off, 0, batchSize);
+            ByteUtils.copyBuffer(b, actionBuffer, off + processed, 0, batchSize);
             processed += batchSize;
         }
+
+//        System.out.println("after processing: ");
+//        print(b, off, count);
 
         return count;
     }
