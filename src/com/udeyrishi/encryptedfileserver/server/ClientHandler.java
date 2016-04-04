@@ -47,7 +47,7 @@ class ClientHandler implements Runnable {
                 }
 
                 InputStream responseStream = protocol.getNextTransmissionMessage().getStream();
-                new StreamCopier(out, responseStream, Long.MAX_VALUE).run();
+                new StreamCopier(out, responseStream).run();
                 responseStream.close();
 
                 logger.log(Level.FINEST, "Tx message sent");

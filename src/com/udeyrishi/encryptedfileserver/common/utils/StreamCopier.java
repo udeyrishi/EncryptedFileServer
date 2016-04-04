@@ -3,44 +3,88 @@ package com.udeyrishi.encryptedfileserver.common.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StreamCorruptedException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by rishi on 2016-04-02.
  */
 public class StreamCopier implements Runnable {
+    private static final Logger logger = LoggerFactory.createConsoleLogger(StreamCopier.class.getName());
     private static final int BUFFER_SIZE = 8192;
+    private static final int RETRY_DELAY_MS = 100;
+    private static final int NUM_RETRIES_SLOWDOWN = 10;
+
     private final InputStream in;
     private final OutputStream out;
     private final boolean terminateIfThreadInterrupted;
-    private final long maxSize;
+    private final long size;
+    private final boolean sizeUnknown;
 
-    public StreamCopier(OutputStream out, InputStream in, long maxSize) {
+    public StreamCopier(OutputStream out, InputStream in) {
         this.out = Preconditions.checkNotNull(out, "out");
         this.in = Preconditions.checkNotNull(in, "in");
         this.terminateIfThreadInterrupted = false;
-        this.maxSize = maxSize;
+        this.size = BUFFER_SIZE;
+        this.sizeUnknown = true;
     }
 
-    public StreamCopier(OutputStream out, InputStream in, long maxSize, boolean terminateIfThreadInterrupted) {
+    public StreamCopier(OutputStream out, InputStream in, boolean terminateIfThreadInterrupted) {
         this.out = Preconditions.checkNotNull(out, "out");
         this.in = Preconditions.checkNotNull(in, "in");
         this.terminateIfThreadInterrupted = terminateIfThreadInterrupted;
-        this.maxSize = maxSize;
+        this.size = BUFFER_SIZE;
+        this.sizeUnknown = true;
+    }
+
+    public StreamCopier(OutputStream out, InputStream in, long size) {
+        this.out = Preconditions.checkNotNull(out, "out");
+        this.in = Preconditions.checkNotNull(in, "in");
+        this.terminateIfThreadInterrupted = false;
+        this.size = size;
+        this.sizeUnknown = false;
+    }
+
+    public StreamCopier(OutputStream out, InputStream in, long size, boolean terminateIfThreadInterrupted) {
+        this.out = Preconditions.checkNotNull(out, "out");
+        this.in = Preconditions.checkNotNull(in, "in");
+        this.terminateIfThreadInterrupted = terminateIfThreadInterrupted;
+        this.size = size;
+        this.sizeUnknown = false;
     }
 
     @Override
     public void run() {
-        int count;
-        byte[] buffer = new byte[(int)Math.min(BUFFER_SIZE, maxSize)];
+        byte[] buffer = new byte[(int)Math.min(BUFFER_SIZE, size)];
 
         try {
             int done = 0;
-            while (done < maxSize && !isInterrupted() && (count = in.read(buffer)) > 0) {
+            int count;
+            while ((sizeUnknown || done < size) && !isInterrupted()) {
+
+                count = in.read(buffer);
+                for (int i = 0; count < 0 && i < NUM_RETRIES_SLOWDOWN; ++i) {
+                    // Client is too fast maybe. Slow down and retry.
+                    logger.log(Level.FINE, String.format("The stream could be lagging behind. Slowing down and retrying " +
+                            "after %d ms", RETRY_DELAY_MS));
+                    Thread.sleep(RETRY_DELAY_MS);
+                    count = in.read(buffer);
+                }
+
+                if (count < 0) {
+                    if (sizeUnknown) {
+                        break;
+                    } else {
+                        out.flush();
+                        throw new StreamCorruptedException(String.format("Expected %d bytes, but only got %d", size, done));
+                    }
+                }
                 out.write(buffer, 0, count);
                 done += count;
             }
             out.flush();
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

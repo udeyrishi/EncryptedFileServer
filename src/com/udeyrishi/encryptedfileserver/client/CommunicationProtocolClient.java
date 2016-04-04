@@ -39,7 +39,7 @@ class CommunicationProtocolClient implements Runnable {
             while (true) {
                 OutgoingMessage requestMessage = protocol.getNextTransmissionMessage();
                 InputStream requestMessageStream = requestMessage.getStream();
-                new StreamCopier(out, requestMessageStream, Long.MAX_VALUE).run();
+                new StreamCopier(out, requestMessageStream).run();
                 requestMessageStream.close();
 
                 if (protocol.isTerminated()) {
