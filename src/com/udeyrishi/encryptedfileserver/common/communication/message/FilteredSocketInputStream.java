@@ -37,22 +37,10 @@ public class FilteredSocketInputStream extends InputStream {
         return this.read(b, 0, b.length);
     }
 
-//    void print(byte a[], int off, int len) {
-//        System.out.print("[");
-//        for (int i = off; i < off + len; ++i) {
-//            System.out.print(a[i]);
-//            System.out.print(", ");
-//        }
-//        System.out.println("]");
-//    }
-
     @Override
     public int read(byte b[], int off, int len) throws IOException {
         byte[] actionBuffer = new byte[bufferActionBufferSize];
         int count = inputStream.read(b, off, len);
-
-//        System.out.println("read from inputStream:");
-//        print(b, off, count);
 
         int processed = 0;
         while (processed < count) {
@@ -66,9 +54,6 @@ public class FilteredSocketInputStream extends InputStream {
             ByteUtils.copyBuffer(b, actionBuffer, off + processed, 0, batchSize);
             processed += batchSize;
         }
-
-//        System.out.println("after processing: ");
-//        print(b, off, count);
 
         return count;
     }

@@ -50,14 +50,16 @@ public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilt
 
                 if (buffer2Count > 0) {
                     // Next buffer still has data. Can't be terminating in buffer 1
-                    return buffer1[count++];
+                    int returnVal = buffer1[count++];
+                    return returnVal & 0xFF;
                 } else if (buffer1 == null) {
                     return -1;
                 } else {
                     // This is the last buffer
                     byte padCount = buffer1[buffer1.length - 1];
                     if (count < buffer1.length - padCount) {
-                        return buffer1[count++];
+                        int returnVal = buffer1[count++];
+                        return returnVal & 0xFF;
                     } else {
                         return -1;
                     }
