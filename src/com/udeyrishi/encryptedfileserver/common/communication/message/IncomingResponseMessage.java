@@ -85,15 +85,15 @@ public class IncomingResponseMessage extends IncomingMessage {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         while (true) {
-            byte lastByte = (byte) stream.read();
+            int lastByte = stream.read();
 
-            if (lastByte == (byte) -1) {
+            if (lastByte == -1) {
                 break;
-            } else if (lastByte == (byte) '\n') {
-                byteArrayOutputStream.write(lastByte);
+            } else if ((byte)(lastByte & 0xFF) == (byte) '\n') {
+                byteArrayOutputStream.write((byte)(lastByte & 0xFF));
                 break;
             } else {
-                byteArrayOutputStream.write(lastByte);
+                byteArrayOutputStream.write((byte)(lastByte & 0xFF));
             }
         }
 

@@ -93,7 +93,7 @@ public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilt
             @Override
             public int read() throws IOException {
                 int val = message.read();
-                if (val >= 0) {
+                if (val != -1) {
                     count = (byte)((count + 1) % messageSizeMultipleOf);
                     return val;
                 } else {
