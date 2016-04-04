@@ -6,6 +6,10 @@ import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProto
 import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingResponseMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.CompoundIncomingMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.CompoundOutgoingMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.IncomingMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.OutgoingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
@@ -35,7 +39,12 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
         for (Map.Entry<String, TEAKey> key : authenticationKeys.entrySet()) {
 
             TEAMessageFilter filter = new TEAMessageFilter(key.getValue());
-            message.setFilter(filter);
+
+            if (message.getFilter() == null) {
+                message.setFilter(filter);
+            } else {
+                message.setFilter(new CompoundIncomingMessageFilter(filter, message.getFilter()));
+            }
             if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_REQUEST) &&
                     message.getContent().equals(key.getKey())) {
                 matchedKey = key.getValue();
@@ -59,8 +68,22 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
             accessGrantedMessage.setFilter(encryptionFilter);
 
             // Change to file-transfer state and encrypt all messages from here onwards
-            protocol.setIncomingMessageFilter(encryptionFilter);
-            protocol.setOutgoingMessageFilter(encryptionFilter);
+            IncomingMessageFilter incomingMessageFilter;
+            if (protocol.getIncomingMessageFilter() == null) {
+                incomingMessageFilter = encryptionFilter;
+            } else {
+                incomingMessageFilter = new CompoundIncomingMessageFilter(encryptionFilter, protocol.getIncomingMessageFilter());
+            }
+
+            OutgoingMessageFilter outgoingMessageFilter;
+            if (protocol.getOutgoingMessageFilter() == null) {
+                outgoingMessageFilter = encryptionFilter;
+            } else {
+                outgoingMessageFilter = new CompoundOutgoingMessageFilter(protocol.getOutgoingMessageFilter(), encryptionFilter);
+            }
+
+            protocol.setIncomingMessageFilter(incomingMessageFilter);
+            protocol.setOutgoingMessageFilter(outgoingMessageFilter);
             protocol.setState(onAuthState);
             return accessGrantedMessage;
         }

@@ -1,4 +1,4 @@
-package com.udeyrishi.encryptedfileserver.common.communication.message;
+package com.udeyrishi.encryptedfileserver.common.communication.message.filters;
 
 import java.io.InputStream;
 

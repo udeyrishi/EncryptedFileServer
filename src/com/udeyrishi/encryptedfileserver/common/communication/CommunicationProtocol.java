@@ -1,9 +1,9 @@
 package com.udeyrishi.encryptedfileserver.common.communication;
 
 import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
-import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.IncomingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
-import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.OutgoingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 
 import java.io.IOException;
@@ -57,10 +57,18 @@ public class CommunicationProtocol {
                 filter == null ? "null" : filter.getClass().getName()));
     }
 
+    public IncomingMessageFilter getIncomingMessageFilter() {
+        return this.incomingMessageFilter;
+    }
+
     public void setOutgoingMessageFilter(OutgoingMessageFilter filter) {
         this.outgoingMessageFilter = filter;
         logger.log(Level.FINER, String.format("Outgoing Filter %s attached to communication protocol",
                 filter == null ? "null" : filter.getClass().getName()));
+    }
+
+    public OutgoingMessageFilter getOutgoingMessageFilter() {
+        return this.outgoingMessageFilter;
     }
 
     public void processReceivedMessage(IncomingMessage message)

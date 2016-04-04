@@ -1,8 +1,8 @@
 package com.udeyrishi.encryptedfileserver.common.tea;
 
 import com.udeyrishi.encryptedfileserver.common.communication.message.FilteredSocketInputStream;
-import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessageFilter;
-import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.IncomingMessageFilter;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.OutgoingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.InputStream;

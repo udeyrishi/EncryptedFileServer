@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.common.communication.message;
 
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.OutgoingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
@@ -48,5 +49,9 @@ public abstract class OutgoingMessage {
 
     public void setFilter(OutgoingMessageFilter filter) {
         this.filter = filter;
+    }
+
+    public OutgoingMessageFilter getFilter() {
+        return this.filter;
     }
 }

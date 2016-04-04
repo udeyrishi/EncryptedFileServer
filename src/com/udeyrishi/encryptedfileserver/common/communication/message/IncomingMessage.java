@@ -1,6 +1,7 @@
 package com.udeyrishi.encryptedfileserver.common.communication.message;
 
 import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.IncomingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.utils.Pair;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
@@ -60,6 +61,10 @@ public abstract class IncomingMessage {
         this.messageFilter = filter;
     }
 
+    public IncomingMessageFilter getFilter() {
+        return this.messageFilter;
+    }
+
     protected byte[] readFromStream() throws IOException {
         ByteArrayOutputStream packet = new ByteArrayOutputStream();
         InputStream filteredStream = stream;
@@ -73,6 +78,7 @@ public abstract class IncomingMessage {
             if (n < 0) {
                 break;
             }
+            // TODO: This won't work if the message is corrupted. it'll block the thread in the next read() call
             packet.write(buffer, 0, n);
             if (buffer[n - 1] == (byte) '\n') {
                 break;
