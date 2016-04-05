@@ -106,7 +106,7 @@ class CommunicationProtocolServer implements MultiThreadedServer {
         logger.log(Level.FINE, String.format("Creating server socket at port %d...", port));
         try {
             serverSocket = new ServerSocket(port);
-            logger.log(Level.FINE, "Server socket created at port " + port.toString());
+            logger.log(Level.INFO, "Server socket created at port " + port.toString());
         } catch (IOException e) {
             serverSocket = null;
             logger.log(Level.SEVERE, String.format("Failed to create server socket on port %d with message: %s",
@@ -118,10 +118,10 @@ class CommunicationProtocolServer implements MultiThreadedServer {
 
     private Socket accept(ServerSocket serverSocket) {
         Socket socket;
-        logger.log(Level.FINE, "Listening....");
+        logger.log(Level.INFO, "Listening...");
         try {
             socket = serverSocket.accept();
-            logger.log(Level.FINE, "New request accepted over server socket");
+            logger.log(Level.INFO, "New request accepted over server socket");
         } catch (SocketException e) {
             socket = null;
             logger.log(Level.FINE, "SocketException caught in CommunicationProtocolServer.accept. Ignore this if a shutdown was " +

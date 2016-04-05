@@ -11,10 +11,13 @@ import java.util.HashMap;
 public class Config {
     private static final String COMMENT = "//";
     private static final String DELIMITER = "=";
-
+    private static Config instance = null;
     private final String filename;
     private final HashMap<String, String> settings = new HashMap<>();
-    private static Config instance = null;
+
+    private Config(String filename) {
+        this.filename = Preconditions.checkNotNull(filename, "filename)");
+    }
 
     public static void initialize(String filename) throws IOException {
         instance = new Config(filename);
@@ -26,10 +29,6 @@ public class Config {
             throw new IllegalStateException("Config has not yet been initialised.");
         }
         return instance;
-    }
-
-    private Config(String filename) {
-        this.filename = Preconditions.checkNotNull(filename, "filename)");
     }
 
     public void read() throws IOException {

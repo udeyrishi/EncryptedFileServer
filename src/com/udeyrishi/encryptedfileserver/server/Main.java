@@ -6,7 +6,10 @@ import com.udeyrishi.encryptedfileserver.common.communication.message.filters.Pa
 import com.udeyrishi.encryptedfileserver.common.tea.BadTEAKeysFileException;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKeyReader;
-import com.udeyrishi.encryptedfileserver.common.utils.*;
+import com.udeyrishi.encryptedfileserver.common.utils.ArgumentParser;
+import com.udeyrishi.encryptedfileserver.common.utils.Config;
+import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
+import com.udeyrishi.encryptedfileserver.common.utils.ValueParsers;
 import com.udeyrishi.encryptedfileserver.server.fileserverstates.FileTransferState;
 import com.udeyrishi.encryptedfileserver.server.fileserverstates.TEAAuthenticationState;
 
@@ -20,6 +23,7 @@ import java.util.logging.Logger;
 
 public class Main {
     static {
+        // Keep this at the top
         try {
             Config.initialize("server.config");
         } catch (Exception e) {

@@ -52,7 +52,6 @@ class CommunicationProtocolClient implements Runnable {
                     break;
                 }
             }
-
         } catch (IOException | BadMessageException e) {
             logger.log(Level.SEVERE, e.toString(), e);
         }

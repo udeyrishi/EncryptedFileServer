@@ -10,7 +10,7 @@ import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandar
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
+import java.security.AccessControlException;
 
 /**
  * Created by rishi on 2016-03-31.
@@ -25,15 +25,20 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
     }
 
     @Override
-    public void messageReceived(CommunicationProtocol protocol, IncomingMessage message) throws IOException, BadMessageException {
-        if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE) &&
-                message.getContent().equals(TEAFileServerProtocolStandard.SpecialContent.ACCESS_GRANTED)) {
-            protocol.setState(nextState);
-        } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE) &&
-                message.getContent().equals(TEAFileServerProtocolStandard.SpecialContent.ACCESS_DENIED)) {
-            throw new AccessDeniedException("Invalid authentication userID-key combination");
-        } else {
-            throw new BadMessageException("Unknown message: " + message.getType() + ", " + message.getContent());
+    public void messageReceived(CommunicationProtocol protocol, IncomingMessage message)
+            throws IOException, AccessControlException {
+        try {
+            if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE) &&
+                    message.getContent().equals(TEAFileServerProtocolStandard.SpecialContent.ACCESS_GRANTED)) {
+                protocol.setState(nextState);
+            } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_RESPONSE) &&
+                    message.getContent().equals(TEAFileServerProtocolStandard.SpecialContent.ACCESS_DENIED)) {
+                throw new AccessControlException("Invalid authentication userID-key combination");
+            } else {
+                throw new BadMessageException("Unknown message: " + message.getType() + ", " + message.getContent());
+            }
+        } catch (BadMessageException e) {
+            throw new AccessControlException("Authentication request rejected by the server");
         }
     }
 
