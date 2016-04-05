@@ -1,5 +1,7 @@
 package com.udeyrishi.encryptedfileserver.common.communication.message.filters;
 
+import com.udeyrishi.encryptedfileserver.common.communication.BadMessageException;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,10 +35,12 @@ public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilt
             @Override
             public int read() throws IOException {
                 if (start) {
-                    start = false;
-                    if (readUntilBufferFull(buffer2) != messageSizeMultipleOf) {
-                        throw new RuntimeException("First packet must be full.");
+                    try {
+                        readUntilBufferFull(buffer2);
+                    } catch (BadMessageException e) {
+                        throw new RuntimeException(e);
                     }
+                    start = false;
                 }
 
                 count %= messageSizeMultipleOf;
@@ -47,7 +51,11 @@ public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilt
                         buffer2 = null;
                     } else {
                         buffer2 = new byte[messageSizeMultipleOf];
-                        buffer2Count = readUntilBufferFull(buffer2);
+                        try {
+                            buffer2Count = readUntilBufferFull(buffer2);
+                        } catch (BadMessageException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
 
@@ -68,11 +76,14 @@ public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilt
 
             }
 
-            private int readUntilBufferFull(byte[] buffer) throws IOException {
+            private int readUntilBufferFull(byte[] buffer) throws IOException, BadMessageException {
                 int offset = 0;
                 int length = buffer.length;
 
                 while (length != 0) {
+                    if (offset > 0 && messageStream.available() == 0) {
+                        throw new BadMessageException("Expected message length to be " + buffer.length + " but got " + offset);
+                    }
                     int count = messageStream.read(buffer, offset, length);
                     if (count < 0) {
                         break;

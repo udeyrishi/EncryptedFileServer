@@ -59,6 +59,8 @@ class ClientHandler implements Runnable {
             logger.log(Level.SEVERE, e.toString(), e);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unhandled exception in ClientHandler", e);
+        } catch (UnsatisfiedLinkError e) {
+            logger.log(Level.SEVERE, "TEA native library not in proper location.", e);
         }
 
         try {

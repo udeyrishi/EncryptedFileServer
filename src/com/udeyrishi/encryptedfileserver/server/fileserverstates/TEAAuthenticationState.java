@@ -69,6 +69,11 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
                 }
             } catch (BadMessageException e) {
                 // Because of decryption failure or garbage message. Ignore
+            } catch (RuntimeException e) {
+                if (e.getCause() == null || !(e.getCause() instanceof BadMessageException)) {
+                    throw e;
+                }
+                // else ignore
             }
         }
     }
