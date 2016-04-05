@@ -64,7 +64,7 @@ public class StreamCopier implements Runnable {
             while ((sizeUnknown || done < size) && !isInterrupted()) {
 
                 count = in.read(buffer);
-                for (int i = 0; count < 0 && i < NUM_RETRIES_SLOWDOWN; ++i) {
+                for (int i = 0; count < 0 && !sizeUnknown && i < NUM_RETRIES_SLOWDOWN; ++i) {
                     // Client is too fast maybe. Slow down and retry.
                     logger.log(Level.FINE, String.format("The stream could be lagging behind. Slowing down and retrying " +
                             "after %d ms", RETRY_DELAY_MS));
@@ -82,6 +82,9 @@ public class StreamCopier implements Runnable {
                 }
                 out.write(buffer, 0, count);
                 done += count;
+                if (!sizeUnknown) {
+                    Thread.sleep(RETRY_DELAY_MS);
+                }
             }
             out.flush();
         } catch (IOException | InterruptedException e) {
