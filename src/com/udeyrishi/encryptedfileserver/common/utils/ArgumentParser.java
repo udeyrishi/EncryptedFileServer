@@ -11,9 +11,9 @@ import java.util.Map;
 public class ArgumentParser {
     private final String[] commandLineArgs;
 
-    private final List<Parser<?>> positionalArgumentParsers = new ArrayList<>();
+    private final List<ValueParser<?>> positionalArgumentValueParsers = new ArrayList<>();
     private final List<String> positionalArgumentNames = new ArrayList<>();
-    private final HashMap<String, Parser<?>> optionalArgumentParsers = new HashMap<>();
+    private final HashMap<String, ValueParser<?>> optionalArgumentParsers = new HashMap<>();
 
     private final List<String> parsedPositionalArgValues = new ArrayList<>();
     private final HashMap<String, String> parsedOptionalArgValues = new HashMap<>();
@@ -27,11 +27,11 @@ public class ArgumentParser {
     protected String getUsage() {
         StringBuilder usage = new StringBuilder("usage: ");
 
-        for (Parser<?> p : positionalArgumentParsers) {
+        for (ValueParser<?> p : positionalArgumentValueParsers) {
             usage.append(String.format(" <%s>[%s]", p.getDescription(), p.getParsedTypeName()));
         }
 
-        for (Map.Entry<String, Parser<?>> p : optionalArgumentParsers.entrySet()) {
+        for (Map.Entry<String, ValueParser<?>> p : optionalArgumentParsers.entrySet()) {
             usage.append(String.format(" -%s[%s]", p.getKey(), p.getValue().getParsedTypeName()));
         }
         return usage.toString();
@@ -39,19 +39,23 @@ public class ArgumentParser {
 
     public void process() {
         parseArgs();
-        for (int i = 0; i < parsedPositionalArgValues.size(); ++i) {
-            Object parsedObject = positionalArgumentParsers.get(i).parse(parsedPositionalArgValues.get(i));
-            parsingResults.put(positionalArgumentNames.get(i), parsedObject);
-        }
-
-        for (Map.Entry<String, String> optionalArg : parsedOptionalArgValues.entrySet()) {
-            if (optionalArgumentParsers.containsKey(optionalArg.getKey())) {
-                Parser<?> parser = optionalArgumentParsers.get(optionalArg.getKey());
-                Object result = parser.parse(optionalArg.getValue());
-                parsingResults.put(optionalArg.getKey(), result);
-            } else {
-                throw new IllegalArgumentException(getUsage());
+        try {
+            for (int i = 0; i < parsedPositionalArgValues.size(); ++i) {
+                Object parsedObject = positionalArgumentValueParsers.get(i).parse(parsedPositionalArgValues.get(i));
+                parsingResults.put(positionalArgumentNames.get(i), parsedObject);
             }
+
+            for (Map.Entry<String, String> optionalArg : parsedOptionalArgValues.entrySet()) {
+                if (optionalArgumentParsers.containsKey(optionalArg.getKey())) {
+                    ValueParser<?> valueParser = optionalArgumentParsers.get(optionalArg.getKey());
+                    Object result = valueParser.parse(optionalArg.getValue());
+                    parsingResults.put(optionalArg.getKey(), result);
+                } else {
+                    throw new IllegalArgumentException(getUsage());
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage() + "\n" + getUsage(), e);
         }
     }
 
@@ -74,74 +78,22 @@ public class ArgumentParser {
             }
         }
 
-        if (this.parsedPositionalArgValues.size() != this.positionalArgumentParsers.size()) {
+        if (this.parsedPositionalArgValues.size() != this.positionalArgumentValueParsers.size()) {
             throw new IllegalArgumentException(getUsage());
         }
     }
 
-    public <T> void addPositionalArg(String argName, Parser<T> parser) {
-        this.positionalArgumentParsers.add(parser);
+    public <T> void addPositionalArg(String argName, ValueParser<T> valueParser) {
+        this.positionalArgumentValueParsers.add(valueParser);
         this.positionalArgumentNames.add(argName);
     }
 
-    public <T> void addOptionalArg(String argName, Parser<T> parser, T defaultValue) {
-        this.optionalArgumentParsers.put(argName, parser);
+    public <T> void addOptionalArg(String argName, ValueParser<T> valueParser, T defaultValue) {
+        this.optionalArgumentParsers.put(argName, valueParser);
         this.parsingResults.put(argName, defaultValue);
     }
 
-    public <T> void addOptionalArg(String argName, Parser<T> parser) {
-        this.addOptionalArg(argName, parser, null);
-    }
-
-    public Parser<Integer> createIntegerParser(final String argumentDescription) {
-        return new Parser<Integer>() {
-            @Override
-            public String getDescription() {
-                return argumentDescription;
-            }
-
-            @Override
-            public String getParsedTypeName() {
-                return "Integer";
-            }
-
-            @Override
-            public Integer parse(String argValue) throws IllegalArgumentException {
-                try {
-                    return Integer.parseInt(argValue);
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException(String.format("The %s needs to be an integer.\n%s",
-                            getDescription().toLowerCase(), getUsage()), e);
-                }
-
-            }
-        };
-    }
-
-    public Parser<String> createStringParser(final String argumentDescription) {
-        return new Parser<String>() {
-            @Override
-            public String getDescription() {
-                return argumentDescription;
-            }
-
-            @Override
-            public String getParsedTypeName() {
-                return "String";
-            }
-
-            @Override
-            public String parse(String argValue) throws IllegalArgumentException {
-                return argValue;
-            }
-        };
-    }
-
-    public interface Parser<T> {
-        String getDescription();
-
-        String getParsedTypeName();
-
-        T parse(String argValue) throws IllegalArgumentException;
+    public <T> void addOptionalArg(String argName, ValueParser<T> valueParser) {
+        this.addOptionalArg(argName, valueParser, null);
     }
 }

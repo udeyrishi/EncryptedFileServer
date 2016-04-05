@@ -6,8 +6,7 @@ import com.udeyrishi.encryptedfileserver.common.communication.message.filters.Pa
 import com.udeyrishi.encryptedfileserver.common.tea.BadTEAKeysFileException;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKeyReader;
-import com.udeyrishi.encryptedfileserver.common.utils.ArgumentParser;
-import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
+import com.udeyrishi.encryptedfileserver.common.utils.*;
 import com.udeyrishi.encryptedfileserver.server.fileserverstates.FileTransferState;
 import com.udeyrishi.encryptedfileserver.server.fileserverstates.TEAAuthenticationState;
 
@@ -20,6 +19,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
+    static {
+        try {
+            Config.initialize("server.config");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static final Logger logger = LoggerFactory.createConsoleLogger(Main.class.getName());
     private static final String PORT = "port";
     private static final String KEYS_FILE_PATH = "keys";
@@ -71,9 +78,9 @@ public class Main {
 
     private static ArgumentParser getArguments(String[] args) throws IllegalArgumentException {
         ArgumentParser parser = new ArgumentParser(args);
-        parser.addPositionalArg(PORT, parser.createIntegerParser("The server's port"));
-        parser.addPositionalArg(KEYS_FILE_PATH, parser.createStringParser("Path to the keys file"));
-        parser.addOptionalArg(FILE_SERVER_ROOT, parser.createStringParser("Path to the file server root"),
+        parser.addPositionalArg(PORT, ValueParsers.createIntegerParser("The server's port"));
+        parser.addPositionalArg(KEYS_FILE_PATH, ValueParsers.createStringParser("Path to the keys file"));
+        parser.addOptionalArg(FILE_SERVER_ROOT, ValueParsers.createStringParser("Path to the file server root"),
                 DEFAULT_ROOT);
         parser.process();
         return parser;

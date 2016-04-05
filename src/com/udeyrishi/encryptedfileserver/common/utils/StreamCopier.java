@@ -12,9 +12,9 @@ import java.util.logging.Logger;
  */
 public class StreamCopier implements Runnable {
     private static final Logger logger = LoggerFactory.createConsoleLogger(StreamCopier.class.getName());
-    private static final int BUFFER_SIZE = 8192;
-    private static final int RETRY_DELAY_MS = 100;
-    private static final int NUM_RETRIES_SLOWDOWN = 10;
+    private static final int BUFFER_SIZE = Config.getConfig().getInt("BUFFER_SIZE_BYTES");
+    private static final int RETRY_DELAY_MS = Config.getConfig().getInt("STREAM_COPIER_RETRY_DELAY_MS");
+    private static final int RETRY_COUNT = Config.getConfig().getInt("STREAM_COPIER_RETRY_COUNT");
 
     private final InputStream in;
     private final OutputStream out;
@@ -64,7 +64,7 @@ public class StreamCopier implements Runnable {
             while ((sizeUnknown || done < size) && !isInterrupted()) {
 
                 count = in.read(buffer);
-                for (int i = 0; count < 0 && !sizeUnknown && i < NUM_RETRIES_SLOWDOWN; ++i) {
+                for (int i = 0; count < 0 && !sizeUnknown && i < RETRY_COUNT; ++i) {
                     // Client is too fast maybe. Slow down and retry.
                     logger.log(Level.FINE, String.format("The stream could be lagging behind. Slowing down and retrying " +
                             "after %d ms", RETRY_DELAY_MS));

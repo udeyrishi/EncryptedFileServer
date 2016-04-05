@@ -11,7 +11,9 @@ import com.udeyrishi.encryptedfileserver.common.tea.TEAKey;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAKeyReader;
 import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.ArgumentParser;
+import com.udeyrishi.encryptedfileserver.common.utils.Config;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
+import com.udeyrishi.encryptedfileserver.common.utils.ValueParsers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,6 +26,14 @@ import java.util.logging.Logger;
  * Created by rishi on 2016-03-28.
  */
 public class Main {
+    static {
+        try {
+            Config.initialize("client.config");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static final String PORT = "port";
     private static final String KEY = "key";
     private static final String HOSTNAME = "host";
@@ -87,9 +97,9 @@ public class Main {
 
     private static ArgumentParser getArgumentParser(String[] args) throws IllegalArgumentException {
         ArgumentParser parser = new ArgumentParser(args);
-        parser.addPositionalArg(PORT, parser.createIntegerParser("The server's port"));
-        parser.addPositionalArg(KEY, parser.createStringParser("The path to the key file"));
-        parser.addOptionalArg(HOSTNAME, parser.createStringParser("The server's complete hostname."), DEFAULT_HOSTNAME);
+        parser.addPositionalArg(PORT, ValueParsers.createIntegerParser("The server's port"));
+        parser.addPositionalArg(KEY, ValueParsers.createStringParser("The path to the key file"));
+        parser.addOptionalArg(HOSTNAME, ValueParsers.createStringParser("The server's complete hostname."), DEFAULT_HOSTNAME);
         parser.process();
         return parser;
     }
