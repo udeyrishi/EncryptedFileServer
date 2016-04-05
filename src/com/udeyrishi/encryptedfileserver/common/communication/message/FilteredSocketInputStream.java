@@ -5,7 +5,6 @@ import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 /**
  * Created by rishi on 2016-04-03.
@@ -48,7 +47,7 @@ public class FilteredSocketInputStream extends InputStream {
             int batchSize = Math.min(left, bufferActionBufferSize);
             ByteUtils.copyBuffer(actionBuffer, b, 0, off + processed, batchSize);
             ByteUtils.copyBuffer(actionBuffer, new byte[bufferActionBufferSize - batchSize], batchSize, 0,
-                                 bufferActionBufferSize - batchSize);
+                    bufferActionBufferSize - batchSize);
 
             action.bufferAction(actionBuffer);
             ByteUtils.copyBuffer(b, actionBuffer, off + processed, 0, batchSize);

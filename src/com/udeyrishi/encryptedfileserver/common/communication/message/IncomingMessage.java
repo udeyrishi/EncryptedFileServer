@@ -57,12 +57,12 @@ public abstract class IncomingMessage {
 
     public abstract long getAttachmentSize() throws IOException, BadMessageException;
 
-    public void setFilter(IncomingMessageFilter filter) {
-        this.messageFilter = filter;
-    }
-
     public IncomingMessageFilter getFilter() {
         return this.messageFilter;
+    }
+
+    public void setFilter(IncomingMessageFilter filter) {
+        this.messageFilter = filter;
     }
 
     protected byte[] readFromStream() throws IOException {

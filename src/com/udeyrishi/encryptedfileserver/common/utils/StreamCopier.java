@@ -56,7 +56,7 @@ public class StreamCopier implements Runnable {
 
     @Override
     public void run() {
-        byte[] buffer = new byte[(int)Math.min(BUFFER_SIZE, size)];
+        byte[] buffer = new byte[(int) Math.min(BUFFER_SIZE, size)];
 
         try {
             int done = 0;

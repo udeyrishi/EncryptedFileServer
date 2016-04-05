@@ -7,8 +7,12 @@ import java.io.InputStream;
  */
 public interface IncomingMessageFilter {
     InputStream filterIncomingMessage(InputStream messageStream);
+
     void turnOnRawMessageCaching();
+
     void turnOffRawMessageCaching();
+
     InputStream getRawMessageCache();
+
     boolean isRawMessageCachingSupported();
 }

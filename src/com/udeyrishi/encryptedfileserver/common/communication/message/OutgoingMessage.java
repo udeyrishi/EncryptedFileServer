@@ -47,11 +47,11 @@ public abstract class OutgoingMessage {
 
     protected abstract InputStream getRawStream();
 
-    public void setFilter(OutgoingMessageFilter filter) {
-        this.filter = filter;
-    }
-
     public OutgoingMessageFilter getFilter() {
         return this.filter;
+    }
+
+    public void setFilter(OutgoingMessageFilter filter) {
+        this.filter = filter;
     }
 }

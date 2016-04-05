@@ -1,8 +1,8 @@
 package com.udeyrishi.encryptedfileserver.common.communication;
 
 import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
-import com.udeyrishi.encryptedfileserver.common.communication.message.filters.IncomingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.filters.IncomingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.communication.message.filters.OutgoingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.LoggerFactory;
 
@@ -51,24 +51,24 @@ public class CommunicationProtocol {
         logger.log(Level.FINER, "Communication protocol's state changed to: " + state.getClass().getName());
     }
 
+    public IncomingMessageFilter getIncomingMessageFilter() {
+        return this.incomingMessageFilter;
+    }
+
     public void setIncomingMessageFilter(IncomingMessageFilter filter) {
         this.incomingMessageFilter = filter;
         logger.log(Level.FINER, String.format("Incoming Filter %s attached to communication protocol",
                 filter == null ? "null" : filter.getClass().getName()));
     }
 
-    public IncomingMessageFilter getIncomingMessageFilter() {
-        return this.incomingMessageFilter;
+    public OutgoingMessageFilter getOutgoingMessageFilter() {
+        return this.outgoingMessageFilter;
     }
 
     public void setOutgoingMessageFilter(OutgoingMessageFilter filter) {
         this.outgoingMessageFilter = filter;
         logger.log(Level.FINER, String.format("Outgoing Filter %s attached to communication protocol",
                 filter == null ? "null" : filter.getClass().getName()));
-    }
-
-    public OutgoingMessageFilter getOutgoingMessageFilter() {
-        return this.outgoingMessageFilter;
     }
 
     public void processReceivedMessage(IncomingMessage message)

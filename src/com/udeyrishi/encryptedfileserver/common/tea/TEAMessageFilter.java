@@ -3,7 +3,6 @@ package com.udeyrishi.encryptedfileserver.common.tea;
 import com.udeyrishi.encryptedfileserver.common.communication.message.FilteredSocketInputStream;
 import com.udeyrishi.encryptedfileserver.common.communication.message.filters.IncomingMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.communication.message.filters.OutgoingMessageFilter;
-import com.udeyrishi.encryptedfileserver.common.utils.ByteUtils;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.ByteArrayInputStream;
@@ -37,7 +36,7 @@ public class TEAMessageFilter implements IncomingMessageFilter, OutgoingMessageF
                 }
                 nativeLib.decrypt(buffer, key.getAsLongArray());
             }
-        }, Long.SIZE*2/Byte.SIZE);
+        }, Long.SIZE * 2 / Byte.SIZE);
     }
 
     @Override
@@ -47,7 +46,7 @@ public class TEAMessageFilter implements IncomingMessageFilter, OutgoingMessageF
             public void bufferAction(byte[] buffer) {
                 nativeLib.encrypt(buffer, key.getAsLongArray());
             }
-        }, Long.SIZE*2/Byte.SIZE);
+        }, Long.SIZE * 2 / Byte.SIZE);
     }
 
     @Override

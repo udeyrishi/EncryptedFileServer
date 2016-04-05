@@ -48,7 +48,7 @@ public class Main {
                 @Override
                 public CommunicationProtocol createProtocolInstance() {
                     FileTransferState onAuthState = new FileTransferState(arguments.<String>get(FILE_SERVER_ROOT));
-                    final PaddingFilter paddingFilter = new PaddingFilter((byte)(2*Long.SIZE/Byte.SIZE));
+                    final PaddingFilter paddingFilter = new PaddingFilter((byte) (2 * Long.SIZE / Byte.SIZE));
 
                     // Sharing keys object is fine, because it's thread-safe (read-only), and only first message requires this
                     return new CommunicationProtocol(new TEAAuthenticationState(authenticationKeys, onAuthState),

@@ -61,7 +61,7 @@ public class Main {
             logger.log(Level.FINER, "Server port: " + arguments.<Integer>get(PORT).toString());
 
             TEAMessageFilter encryptionFiler = new TEAMessageFilter(teaKey);
-            PaddingFilter paddingFilter = new PaddingFilter((byte)(2*Long.SIZE/Byte.SIZE));
+            PaddingFilter paddingFilter = new PaddingFilter((byte) (2 * Long.SIZE / Byte.SIZE));
 
             final CommunicationProtocol protocol = new CommunicationProtocol(new TEAAuthenticationState(userID,
                     new FileReceivalState(new BufferedReader(new InputStreamReader(System.in)), System.out)),

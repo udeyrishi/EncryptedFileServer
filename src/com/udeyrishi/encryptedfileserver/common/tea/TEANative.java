@@ -9,5 +9,6 @@ public class TEANative {
     }
 
     public native void encrypt(byte[] data, long[] key);
+
     public native void decrypt(byte[] data, long[] key);
 }

@@ -60,7 +60,7 @@ public class IncomingResponseMessage extends IncomingMessage {
 
         byte[] messageBytes = readStreamUntilNewlineOrEOF();
         Pair<String, String> typeAndContent = parseMessage(new String(messageBytes));
-        if (messageBytes[messageBytes.length - 1] == (byte)'\n') {
+        if (messageBytes[messageBytes.length - 1] == (byte) '\n') {
             attachmentSize = readAttachmentSize();
         }
 
@@ -70,14 +70,15 @@ public class IncomingResponseMessage extends IncomingMessage {
     }
 
     private long readAttachmentSize() {
-        final byte[] attachmentSizeBytes = new byte[Long.SIZE/Byte.SIZE];
+        final byte[] attachmentSizeBytes = new byte[Long.SIZE / Byte.SIZE];
         new StreamCopier(new OutputStream() {
             int i = 0;
+
             @Override
             public void write(int b) throws IOException {
-                attachmentSizeBytes[i++] = (byte)b;
+                attachmentSizeBytes[i++] = (byte) b;
             }
-        }, stream, Long.SIZE/Byte.SIZE).run();
+        }, stream, Long.SIZE / Byte.SIZE).run();
         return ByteUtils.bytesToLong(attachmentSizeBytes);
     }
 
@@ -89,11 +90,11 @@ public class IncomingResponseMessage extends IncomingMessage {
 
             if (lastByte == -1) {
                 break;
-            } else if ((byte)(lastByte & 0xFF) == (byte) '\n') {
-                byteArrayOutputStream.write((byte)(lastByte & 0xFF));
+            } else if ((byte) (lastByte & 0xFF) == (byte) '\n') {
+                byteArrayOutputStream.write((byte) (lastByte & 0xFF));
                 break;
             } else {
-                byteArrayOutputStream.write((byte)(lastByte & 0xFF));
+                byteArrayOutputStream.write((byte) (lastByte & 0xFF));
             }
         }
 

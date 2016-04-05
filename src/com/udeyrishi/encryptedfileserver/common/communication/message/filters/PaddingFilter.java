@@ -105,7 +105,7 @@ public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilt
             public int read() throws IOException {
                 int val = message.read();
                 if (val != -1) {
-                    count = (byte)((count + 1) % messageSizeMultipleOf);
+                    count = (byte) ((count + 1) % messageSizeMultipleOf);
                     return val;
                 } else {
                     if (numPadCountValuesSent == 0) {
