@@ -40,7 +40,7 @@ class ClientHandler implements Runnable {
                     protocol.processReceivedMessage(incomingRequestMessage);
                     logger.log(Level.FINEST, "Rx message processing completed");
                 } catch (BadMessageException e) {
-                    logger.log(Level.SEVERE, "Illegal message received from client. Ignoring and moving on.", e);
+                    logger.log(Level.WARNING, "Illegal message received from client. Ignoring and moving on.", e);
                 }
                 if (shouldTerminate()) {
                     break;
@@ -56,9 +56,9 @@ class ClientHandler implements Runnable {
                 }
             }
         } catch (IOException | IllegalStateException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            logger.log(Level.WARNING, e.toString(), e);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Unhandled exception in ClientHandler", e);
+            logger.log(Level.WARNING, "Unhandled exception in ClientHandler", e);
         } catch (UnsatisfiedLinkError e) {
             logger.log(Level.SEVERE, "TEA native library not in proper location.", e);
         }
@@ -66,7 +66,7 @@ class ClientHandler implements Runnable {
         try {
             socket.close();
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to close socket after completing communications.", e);
+            logger.log(Level.WARNING, "Failed to close socket after completing communications.", e);
         }
 
         logger.log(Level.FINER, "Shutting down client handler");

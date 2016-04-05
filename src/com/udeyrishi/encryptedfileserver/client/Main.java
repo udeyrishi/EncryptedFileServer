@@ -92,6 +92,8 @@ public class Main {
 
         } catch (IOException | BadTEAKeysFileException e) {
             logger.log(Level.SEVERE, e.toString(), e);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unhandled exception in client.", e);
         }
     }
 
