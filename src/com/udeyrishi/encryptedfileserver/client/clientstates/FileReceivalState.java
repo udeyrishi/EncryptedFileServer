@@ -12,6 +12,7 @@ import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 import com.udeyrishi.encryptedfileserver.common.utils.StreamCopier;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,7 +48,15 @@ public class FileReceivalState implements CommunicationProtocolState {
             userOut.println(String.format("Error: File '%s' not found on the server", lastFileRequested));
         } else if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.FILE_RESPONSE_SUCCESS)) {
             if (message.getContent().equals(lastFileRequested)) {
-                downloadAttachment(message.getAttachmentStream(), message.getAttachmentSize());
+                try {
+                    downloadAttachment(message.getAttachmentStream(), message.getAttachmentSize());
+                } catch (SecurityException e) {
+                    userOut.println(String.format("Error: Destination '%s' is non-writable", downloadPath));
+                    logger.log(Level.WARNING, e.toString(), e);
+                    // Dump the stream
+                    //noinspection ResultOfMethodCallIgnored
+                    message.getAttachmentStream().read(new byte[(int)message.getAttachmentSize()]);
+                }
             } else {
                 logger.log(Level.SEVERE, "Incorrect file received: " + message.getContent());
                 throw new BadMessageException("Incorrect file received: " + message.getContent());
@@ -60,7 +69,11 @@ public class FileReceivalState implements CommunicationProtocolState {
     }
 
     private void downloadAttachment(InputStream attachmentStream, long fileSize) throws IOException {
-        try (FileOutputStream fileSaveStream = new FileOutputStream(downloadPath)) {
+        File downloadFile = new File(downloadPath);
+        //noinspection ResultOfMethodCallIgnored
+        downloadFile.getParentFile().mkdirs();
+
+        try (FileOutputStream fileSaveStream = new FileOutputStream(downloadFile);) {
             downloader = new Thread(new StreamCopier(fileSaveStream, attachmentStream, fileSize, true));
             downloader.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
