@@ -1,3 +1,4 @@
+*.class
 *.out
 *.iml
 test_data/
