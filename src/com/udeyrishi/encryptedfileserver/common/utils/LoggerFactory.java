@@ -1,5 +1,6 @@
 package com.udeyrishi.encryptedfileserver.common.utils;
 
+import java.io.IOException;
 import java.util.logging.*;
 
 /**
@@ -19,10 +20,27 @@ public class LoggerFactory {
             logger.removeHandler(h);
         }
 
-        ConsoleHandler consoleHandler = new ConsoleHandler();
-        consoleHandler.setFormatter(new SimpleFormatter());
-        consoleHandler.setLevel(logLevel);
-        logger.addHandler(consoleHandler);
+        Handler handler;
+        boolean failed = false;
+        String logTarget = Config.getConfig().getString("LOG_TARGET");
+        if (logTarget == null || logTarget.toLowerCase().equals("console")) {
+            handler = new ConsoleHandler();
+        } else {
+            try {
+                handler = new FileHandler(name + "." + logTarget);
+            } catch (IOException e) {
+                failed = true;
+                handler = new ConsoleHandler();
+            }
+        }
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(logLevel);
+        logger.addHandler(handler);
+
+        if (failed) {
+            logger.log(Level.WARNING,
+                    String.format("Failed to create logger for file '%s'. Making console logger instead", logTarget));
+        }
         return logger;
     }
 
