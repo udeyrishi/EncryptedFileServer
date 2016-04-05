@@ -29,8 +29,8 @@ public class Main {
     static {
         try {
             Config.initialize("client.config");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("Bad config file: client.config", e);
         }
     }
 

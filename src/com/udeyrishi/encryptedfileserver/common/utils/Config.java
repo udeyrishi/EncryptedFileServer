@@ -9,6 +9,9 @@ import java.util.HashMap;
  * Created by rishi on 2016-04-04.
  */
 public class Config {
+    private static final String COMMENT = "//";
+    private static final String DELIMITER = "=";
+
     private final String filename;
     private final HashMap<String, String> settings = new HashMap<>();
     private static Config instance = null;
@@ -33,7 +36,11 @@ public class Config {
         if (filename != null) {
             try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    String[] parts = line.split("=");
+                    if (line.trim().isEmpty() || line.trim().startsWith(COMMENT)) {
+                        continue;
+                    }
+
+                    String[] parts = line.split(DELIMITER);
                     String setting = parts[0].trim();
                     String value = parts[1].trim();
                     settings.put(setting, value);

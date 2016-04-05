@@ -22,8 +22,8 @@ public class Main {
     static {
         try {
             Config.initialize("server.config");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("Bad config file: server.config", e);
         }
     }
 

@@ -9,7 +9,9 @@ import java.util.logging.SimpleFormatter;
  * Created by rishi on 2016-03-30.
  */
 public class LoggerFactory {
-    private static Level DEFAULT_LOG_LEVEL = Level.ALL;
+    private static final Level DEBUG_LEVEL = Level.ALL;
+    private static final Level PROD_LEVEL = Level.INFO;
+    private static Level DEFAULT_LOG_LEVEL = DEBUG_LEVEL;
 
     public static Logger createConsoleLogger(String name) {
         Level logLevel = getLogLevel();
@@ -24,15 +26,30 @@ public class LoggerFactory {
 
     private static Level getLogLevel() {
         String settingsLogLevel = Config.getConfig().getString("LOG_LEVEL");
-        Level logLevel = DEFAULT_LOG_LEVEL;
-        try {
-            if (settingsLogLevel != null) {
-                logLevel = Level.parse(settingsLogLevel);
-            }
-        } catch (IllegalArgumentException e) {
-            // leave default
-        }
+        String appMode = Config.getConfig().getString("MODE");
 
-        return logLevel;
+        if (settingsLogLevel != null) {
+            try {
+                return Level.parse(settingsLogLevel);
+            } catch (IllegalArgumentException e) {
+                if (appMode != null) {
+                    return getAppModeBasedLogLevel(appMode);
+                } else {
+                    return DEFAULT_LOG_LEVEL;
+                }
+            }
+        } else if (appMode != null) {
+            return getAppModeBasedLogLevel(appMode);
+        } else {
+            return DEFAULT_LOG_LEVEL;
+        }
+    }
+
+    private static Level getAppModeBasedLogLevel(String appMode) {
+        if (appMode.toLowerCase().equals("prod")) {
+            return PROD_LEVEL;
+        } else {
+            return DEBUG_LEVEL;
+        }
     }
 }
