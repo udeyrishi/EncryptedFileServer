@@ -23,6 +23,26 @@ public class CompoundIncomingMessageFilter implements IncomingMessageFilter {
         return messageStream;
     }
 
+    @Override
+    public void turnOnRawMessageCaching() {
+        throw new UnsupportedOperationException("Internal filters might support caching");
+    }
+
+    @Override
+    public void turnOffRawMessageCaching() {
+        throw new UnsupportedOperationException("Internal filters might support caching");
+    }
+
+    @Override
+    public InputStream getRawMessageCache() {
+        throw new UnsupportedOperationException("Internal filters might support caching");
+    }
+
+    @Override
+    public boolean isRawMessageCachingSupported() {
+        return false;
+    }
+
     public void addFilter(IncomingMessageFilter filter) {
         filters.add(filter);
     }

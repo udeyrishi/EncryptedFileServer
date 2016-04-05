@@ -1,5 +1,7 @@
 package com.udeyrishi.encryptedfileserver.common.communication.message.filters;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -9,6 +11,7 @@ import java.io.InputStream;
 public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilter {
 
     private final byte messageSizeMultipleOf;
+    private ByteArrayOutputStream incomingCacheBuffer = null;
 
     public PaddingFilter(byte messageSizeMultipleOf) {
         this.messageSizeMultipleOf = messageSizeMultipleOf;
@@ -50,16 +53,14 @@ public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilt
 
                 if (buffer2Count > 0) {
                     // Next buffer still has data. Can't be terminating in buffer 1
-                    int returnVal = buffer1[count++];
-                    return returnVal & 0xFF;
+                    return getAndCacheValueFromBuffer(buffer1, count++);
                 } else if (buffer1 == null) {
                     return -1;
                 } else {
                     // This is the last buffer
                     byte padCount = buffer1[buffer1.length - 1];
                     if (count < buffer1.length - padCount) {
-                        int returnVal = buffer1[count++];
-                        return returnVal & 0xFF;
+                        return getAndCacheValueFromBuffer(buffer1, count++);
                     } else {
                         return -1;
                     }
@@ -83,6 +84,14 @@ public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilt
                 return offset;
             }
         };
+    }
+
+    private int getAndCacheValueFromBuffer(byte[] buffer, int index) {
+        int returnVal = buffer[index];
+        if (incomingCacheBuffer != null) {
+            incomingCacheBuffer.write(returnVal & 0xFF);
+        }
+        return returnVal & 0xFF;
     }
 
     @Override
@@ -112,5 +121,29 @@ public class PaddingFilter implements IncomingMessageFilter, OutgoingMessageFilt
                 }
             }
         };
+    }
+
+    @Override
+    public void turnOnRawMessageCaching() {
+        incomingCacheBuffer = new ByteArrayOutputStream();
+    }
+
+    @Override
+    public void turnOffRawMessageCaching() {
+        incomingCacheBuffer = null;
+    }
+
+    @Override
+    public InputStream getRawMessageCache() {
+        if (incomingCacheBuffer == null) {
+            return null;
+        } else {
+            return new ByteArrayInputStream(incomingCacheBuffer.toByteArray());
+        }
+    }
+
+    @Override
+    public boolean isRawMessageCachingSupported() {
+        return true;
     }
 }

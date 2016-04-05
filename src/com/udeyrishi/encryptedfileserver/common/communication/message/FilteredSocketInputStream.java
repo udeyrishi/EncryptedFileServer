@@ -89,7 +89,7 @@ public class FilteredSocketInputStream extends InputStream {
     }
 
     public interface FilterBufferAction {
-        void bufferAction(byte[] buffer);
+        void bufferAction(byte[] buffer) throws IOException;
     }
 
 }

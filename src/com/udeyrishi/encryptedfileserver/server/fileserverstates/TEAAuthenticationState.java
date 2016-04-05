@@ -4,6 +4,7 @@ import com.udeyrishi.encryptedfileserver.common.communication.BadMessageExceptio
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocol;
 import com.udeyrishi.encryptedfileserver.common.communication.CommunicationProtocolState;
 import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingMessage;
+import com.udeyrishi.encryptedfileserver.common.communication.message.IncomingRequestMessage;
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingMessage;
 import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingResponseMessage;
 import com.udeyrishi.encryptedfileserver.common.communication.message.filters.CompoundIncomingMessageFilter;
@@ -16,6 +17,7 @@ import com.udeyrishi.encryptedfileserver.common.tea.TEAMessageFilter;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -33,17 +35,31 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
     }
 
     @Override
-    public void messageReceived(CommunicationProtocol protocol, IncomingMessage message) throws IOException, BadMessageException {
-        // reset
+    public void messageReceived(CommunicationProtocol protocol, IncomingMessage message)
+            throws IOException, BadMessageException {
+
         matchedKey = null;
+        TEAMessageFilter encryptionFilter = null;
+        IncomingMessageFilter defaultFilter = message.getFilter();
+
         for (Map.Entry<String, TEAKey> key : authenticationKeys.entrySet()) {
 
-            TEAMessageFilter filter = new TEAMessageFilter(key.getValue());
+            if (encryptionFilter != null) {
+                InputStream encryptedStream = encryptionFilter.getRawMessageCache();
+                encryptionFilter.turnOffRawMessageCaching();
+                message = new IncomingRequestMessage(encryptedStream);
+                if (defaultFilter != null) {
+                    message.setFilter(defaultFilter);
+                }
+            }
+
+            encryptionFilter = new TEAMessageFilter(key.getValue());
+            encryptionFilter.turnOnRawMessageCaching();
 
             if (message.getFilter() == null) {
-                message.setFilter(filter);
+                message.setFilter(encryptionFilter);
             } else {
-                message.setFilter(new CompoundIncomingMessageFilter(filter, message.getFilter()));
+                message.setFilter(new CompoundIncomingMessageFilter(encryptionFilter, message.getFilter()));
             }
             try {
                 if (message.getType().equals(TEAFileServerProtocolStandard.TypeNames.AUTH_REQUEST) &&
@@ -52,8 +68,7 @@ public class TEAAuthenticationState implements CommunicationProtocolState {
                     break;
                 }
             } catch (BadMessageException e) {
-                // Potentially because of decryption failure
-                continue;
+                // Because of decryption failure or garbage message. Ignore
             }
         }
     }
