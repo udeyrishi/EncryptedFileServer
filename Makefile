@@ -13,8 +13,6 @@ SRC_DIR := src
 NATIVE_PATH := com/udeyrishi/encryptedfileserver/common/tea
 NATIVE_TARGET := $(OUT_DIR)/$(NATIVE_PATH)/$(NATIVE_TARGET)
 
-# export LD_LIBRARY_PATH := $(LD_LIBRARY_PATH):.
-
 MKDIR_P := mkdir -p
 RM_DIR := $(RM) -r
 

@@ -9,6 +9,7 @@ import com.udeyrishi.encryptedfileserver.common.communication.message.OutgoingRe
 import com.udeyrishi.encryptedfileserver.common.tea.TEAFileServerProtocolStandard;
 import com.udeyrishi.encryptedfileserver.common.utils.Preconditions;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
@@ -65,12 +66,16 @@ public class FileTransferState implements CommunicationProtocolState {
         return response;
     }
 
-    private void validateFile() throws AccessDeniedException {
+    private void validateFile() throws IOException {
         String serverRoot = Paths.get(root).normalize().toAbsolutePath().toString();
         String requestedFile = Paths.get(root, lastFileRequested).normalize().toAbsolutePath().toString();
         if (!requestedFile.contains(serverRoot)) {
             // Caught ya!
             throw new AccessDeniedException("Can't get files outside of the server root!");
+        }
+
+        if (!new File(requestedFile).isFile()) {
+            throw new IOException("Requested path is a directory, not a file.");
         }
     }
 
