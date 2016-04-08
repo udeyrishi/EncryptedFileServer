@@ -2,17 +2,19 @@
 from os import system
 import sys
 
+OUT_DIR = 'bin'
+
 def run_server(args):
     system('java ' +
-        '-Djava.library.path="./out/com/udeyrishi/encryptedfileserver/common/tea" ' +
-        '-cp ./out/ ' +
+        '-Djava.library.path="./{0}/com/udeyrishi/encryptedfileserver/common/tea" '.format(OUT_DIR) +
+        '-cp ./{0}/ '.format(OUT_DIR) +
         'com.udeyrishi.encryptedfileserver.server.Main ' +
         ' '.join(args))
 
 def run_client(args):
     system('java ' +
-        '-Djava.library.path="./out/com/udeyrishi/encryptedfileserver/common/tea" ' +
-        '-cp ./out/ ' +
+        '-Djava.library.path="./{0}/com/udeyrishi/encryptedfileserver/common/tea" '.format(OUT_DIR) +
+        '-cp ./{0}/ '.format(OUT_DIR) +
         'com.udeyrishi.encryptedfileserver.client.Main ' +
         ' '.join(args))
 

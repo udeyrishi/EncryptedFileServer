@@ -8,7 +8,7 @@ ifeq ($(UNAME_S),Darwin)
     NATIVE_TARGET := libcom_udeyrishi_encryptedfileserver_common_tea_TEANative.dylib
 endif
 
-OUT_DIR := out
+OUT_DIR := bin
 SRC_DIR := src
 NATIVE_PATH := com/udeyrishi/encryptedfileserver/common/tea
 NATIVE_TARGET := $(OUT_DIR)/$(NATIVE_PATH)/$(NATIVE_TARGET)
