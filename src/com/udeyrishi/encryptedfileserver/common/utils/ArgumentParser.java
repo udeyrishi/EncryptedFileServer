@@ -51,7 +51,7 @@ public class ArgumentParser {
                     Object result = valueParser.parse(optionalArg.getValue());
                     parsingResults.put(optionalArg.getKey(), result);
                 } else {
-                    throw new IllegalArgumentException(getUsage());
+                    throw new IllegalArgumentException("");
                 }
             }
         } catch (IllegalArgumentException e) {
