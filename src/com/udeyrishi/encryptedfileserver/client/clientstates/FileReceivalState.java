@@ -71,7 +71,10 @@ public class FileReceivalState implements CommunicationProtocolState {
     private void downloadAttachment(InputStream attachmentStream, long fileSize) throws IOException {
         File downloadFile = new File(downloadPath);
         //noinspection ResultOfMethodCallIgnored
-        downloadFile.getParentFile().mkdirs();
+        if (downloadFile.getParentFile() != null) {
+            downloadFile.getParentFile().mkdirs();
+            downloadFile.getParentFile().mkdirs();
+        }
 
         try (FileOutputStream fileSaveStream = new FileOutputStream(downloadFile);) {
             downloader = new Thread(new StreamCopier(fileSaveStream, attachmentStream, fileSize, true));
