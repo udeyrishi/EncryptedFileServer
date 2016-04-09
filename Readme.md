@@ -1,6 +1,6 @@
 Encrypted File Server
 --------------------------------
-A file server and client that uses a [Feistel cipher](https://en.wikipedia.org/wiki/Feistel_cipher) (based on [Tiny Encryption Algorithm](https://en.wikipedia.org/wiki/Tiny_Encryption_Algorithm) with a slight modification--it uses 256-bit keys) to communicate and transfer files over encrypted channels. The application is written primarily in Java, with the TEA encryption routines are in C, and are interfaced via [JNI](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/). The server can handle multiple client connections in parallel. 
+A file server and client that uses a [Feistel cipher](https://en.wikipedia.org/wiki/Feistel_cipher) (based on [Tiny Encryption Algorithm](https://en.wikipedia.org/wiki/Tiny_Encryption_Algorithm) with a slight modification--it uses 256-bit keys) to communicate and transfer files over encrypted channels. The application is written primarily in Java, with the TEA encryption routines being in C, and interfaced via [JNI](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/). The server can handle multiple client connections in parallel.
 
 ###Compiling
 
@@ -53,7 +53,7 @@ Filename [ENTER to quit] >> hello.txt
 Download path [ENTER to quit] >> downloads/hello.txt
 ```
 
-The filename should be a relative file path below the server's root directory. If the directories in the download path don't exist, they will be created. On hitting ENTER with an empty input (either at the filename or download path prompt), the session will be closed.
+The filename should be a relative file path below the server's root directory. If the directories in the download path don't exist, they will be created. Hitting ENTER with an empty input (either at the filename or download path prompt) will close the session.
 
 ###Keys file
 
@@ -69,7 +69,7 @@ For the server, the keys file should be in the same format as the client keys, e
 
 ```
 test_id    0x12376378 08643124 24689864 78654323 23098712 08514330 67985643 12348723
-udey_rishi 0x12345678 09876543 08643124 24689864 78654323 67985643 23098712 12348723
+test_id2   0x12345678 09876543 08643124 24689864 78654323 67985643 23098712 12348723
 ```
 
 These are all the users that have access to the file server.
@@ -79,21 +79,21 @@ The entire communication happens over a TEA encrypted channel. The unencrypted p
 
 ```
 1. Client-to-Server: type:Auth-Request;content:<user_name>
-2. If the request message is decrypted by any of the allowed keys, and the corresponding user name matches the one in the server's keys file:
+2. If the request message is decrypted by any of the allowed keys, and the corresponding user name matches the one in the auth request's content:
    Server-to-Client: type:Auth-Response;content:Access-Granted
-   
+
    Else, this response is returned unencrypted:
    Server-to-Client: type:Auth-Response;content:Access-Denied
-   
+
 3. Post authentication, all the file requests will be sent like this:
    Client-to-Server: type:File-Request;content:<filename>
 
 4. To which, the server can respond in any of the following ways:
    Server-to-Client: type:File-Response-Failure;content:File-Not-Found
-   
+
    Or,
    Server-to-Client: type:File-Response-Success;content:<filename>\n<64bit_filesize_in_bytes><file_bytestream>
-   
+
 5. To terminate a session safely (optional):
    Client-to-Server: type:Termination-Request;content:No-Content
 
